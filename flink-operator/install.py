@@ -1,6 +1,7 @@
 #import argparse
 import subprocess
 import click
+import argu
 #parser = argparse.ArgumentParser(description='flink operator arguments')
 #parser.add_argument('version', type=str, help='Flink operator version to install. Default last version 1.19',
 #                    default='1.8.0')
@@ -38,8 +39,8 @@ def install(v: str='1.8.0'):
     """
     
     click.echo('Version of flink-operator: ' + v)
-    helm_command = 'helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-' + v
-    click.echo('helm command: ' + helm_command)
+    helm_command = ['helm', 'repo', 'add', 'flink-operator-repo', argu.HELM_REPO, v]
+    click.echo('helm command: ' + str(helm_command))
 
 if __name__ == '__main__':
     flinkop()
