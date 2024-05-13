@@ -21,12 +21,25 @@ import click
 #print(helm_return)
 
 
-@click.command('install')
+@click.group()
+def flinkop():
+    """
+        Install flink operator command
+    """
+
+@flinkop.command(name='install')
 @click.argument('v', type=str)
-@click.version_option('0.1.0', prog_name='flink-operator')
 def install(v: str='1.8.0'):
+    """
+
+    Args:
+        v (str, optional): _description_. Defaults to '1.8.0'.
+    Install the flink operator with helm with the version specified.
+    """
+    
     click.echo('Version of flink-operator: ' + v)
     helm_command = 'helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-' + v
     click.echo('helm command: ' + helm_command)
+
 if __name__ == '__main__':
-    install()
+    flinkop()
