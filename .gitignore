@@ -1,2 +1,4 @@
 .venv/
 flink-operator/__pycache__/
+redpanda-helm/__pycache__/
+redpanda-helm/values-redpanda.yaml
