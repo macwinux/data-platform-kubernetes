@@ -17,7 +17,7 @@ def redpanda():
 
 def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1):
     """
-    Despliega Redpanda en Kubernetes utilizando Helm.
+    Deploy Redpanda on Kubernetes using Helm.
         Args:
         tls_enaled (str, mandatory): _description_. Defaults 'false'.
         Install redpanda using LS (Transport Layer Security) for encrypted communication. Use false to avoid cofigure tls. Defaults 'false'.
@@ -42,6 +42,7 @@ def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1
         namespace_exists = subprocess.run(["kubectl", "get", "namespace", namespace], capture_output=True, text=True)
         if namespace_exists.returncode != 0:
             # El namespace no existe, crearlo
+            click.echo(f"kubectl create namespace --namespace {namespace}")
             subprocess.run(["kubectl", "create", "namespace", namespace], check=True)
         
         if tls_enabled.lower() == 'false':
@@ -56,12 +57,39 @@ def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1
             with open('values-redpanda.yaml', 'w') as file:
                 yaml.dump(data, file, default_flow_style=False)
         
-
+        click.echo(f"helm install redpanda redpanda/redpanda --namespace {namespace} --values values-redpanda.yaml")
         subprocess.run(["helm", "install", "redpanda", "redpanda/redpanda", "--namespace", namespace, "--values", "values-redpanda.yaml"], check=True)
-        click.echo("Despliegue de Redpanda completado con éxito!")
+        click.echo("Redpanda deployment completed successfully!")
     except subprocess.CalledProcessError as e:
         click.echo(f"Error: {e}")
-        click.echo("El despliegue de Redpanda ha fallado. Por favor, revisa los mensajes de error.")
+        click.echo("Redpanda deployment has failed. Please check the error messages.")
+
+
+@redpanda.command()
+@click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deleted')
+def delete(namespace):
+    """
+    Delete Redpanda in Kubernetes using Helm.
+    
+    Options:    
+    --namespace (str, optional): _description_. Defaults to 'default'.
+        Delete the redpanda cluster in the namespace specified
+    """
+    try:
+        click.echo(f"helm uninstall redpanda --namespace {namespace}")
+        subprocess.run(["helm", "uninstall", "redpanda", "--namespace", namespace], check=True)
+        
+        click.echo(f"kubectl delete pod --all --namespace {namespace}")
+        subprocess.run(["kubectl", "delete", "pod", "--all","--namespace", namespace], check=True)
+        
+        click.echo(f"kubectl delete pvc --all --namespace {namespace}")
+        subprocess.run(["kubectl", "delete", "secret", "--all","--namespace", namespace], check=True)
+        
+        click.echo(f"kubectl delete job redpanda-configuration --namespace {namespace}")
+        subprocess.run(["kubectl", "delete", "job", "redpanda-configuration","--namespace", namespace], check=True)
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error: {e}")
+        click.echo("Redpanda deletion has failed. Please check the error messages.")
 
 if __name__ == '__main__':
     redpanda()
