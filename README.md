@@ -6,4 +6,4 @@
 `.venv\Scripts\activate`
 3.  `pip install -r requirements.txt`
 4. Now, you can run for example, flink operator with:
-`install.py install 1.8.0`
+`dp.py flinkop install` or `dp.py flinkop install 1.8.0`
