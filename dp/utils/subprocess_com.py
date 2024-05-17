@@ -1,7 +1,6 @@
 import click
 from subprocess import CompletedProcess, run
 
-
 def create_ns(namespace: str)-> CompletedProcess[bytes]:
     """ Command that create a new namespace in kubernetes
 
@@ -25,7 +24,7 @@ def create_ns(namespace: str)-> CompletedProcess[bytes]:
         raise SystemError(result.stderr)
     else:
         click.echo('-------------------------------------------')
-        click.echo('{namespace} namespace created')
+        click.echo(f'{namespace} namespace created')
         click.echo('-------------------------------------------')
         return result 
 
@@ -38,13 +37,12 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
         repo_url (str): url that point to the helm repository 
 
     Raises:
-        SystemError: _description_
+        SystemError: Error if the repo add fails
 
     Returns:
-        CompletedProcess[bytes]: _description_
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     helm_command = ['helm', 'repo', 'add', repo_name, repo_url]
-    click.echo('helm command: ' + str(helm_command))
     result = run_subprocess(helm_command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -59,6 +57,17 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
 
 
 def install_repo(repo_name:str, operator_name: str) -> CompletedProcess[bytes]:
+    """Command for install a repo added in Helm
+
+    Args:
+        repo_name (str): name of the repo in helm
+        operator_name (str): operator that you want to install in helm
+
+    Raises:
+        SystemError: Error if the repo install fails
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
     install_command = ['helm', '-n', repo_name, 'install', '-f',
                            'values.yaml' , operator_name, '--set', 'webhook.create=false']
     result = run_subprocess(install_command)
