@@ -1,5 +1,7 @@
+from pathlib import Path
 import click
 from subprocess import CompletedProcess, run
+import pkg_resources
 
 def create_ns(namespace: str)-> CompletedProcess[bytes]:
     """ Command that create a new namespace in kubernetes
@@ -56,10 +58,11 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
         return result  
 
 
-def install_repo(repo_name:str, operator_name: str) -> CompletedProcess[bytes]:
+def install_repo(namespace: str, repo_name:str, operator_name: str) -> CompletedProcess[bytes]:
     """Command for install a repo added in Helm
 
     Args:
+        namespace (str): name of the namespace in kubernetes
         repo_name (str): name of the repo in helm
         operator_name (str): operator that you want to install in helm
 
@@ -68,8 +71,10 @@ def install_repo(repo_name:str, operator_name: str) -> CompletedProcess[bytes]:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    install_command = ['helm', '-n', repo_name, 'install', '-f',
-                           'values.yaml' , operator_name, '--set', 'webhook.create=false']
+    path = pkg_resources.resource_filename("dp","resources")
+    values_path = next(Path(path).glob("flinkop-values.yaml"),'flink-values.yaml')
+    install_command = ['helm', '-n', namespace, 'install', '-f',
+                           values_path , repo_name, operator_name, '--set', 'webhook.create=false']
     result = run_subprocess(install_command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')

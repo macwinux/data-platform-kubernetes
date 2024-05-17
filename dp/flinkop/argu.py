@@ -1,1 +1,1 @@
-HELM_REPO = 'https://downloads.apache.org/flink/flink-kubernetes-operator-'
+HELM_REPO: str = 'https://downloads.apache.org/flink/flink-kubernetes-operator-'
