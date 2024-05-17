@@ -10,28 +10,19 @@ def redpanda():
     pass
 
 @redpanda.command()
-@click.argument('tls_enabled')
+@click.option('--tls', default='false', help='Set TLS configuration in Redpanda')
 @click.option('--version', default='5.8.5', help='Redpanda helm chat version')
 @click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deployed')
-@click.option('--brokers', '-b', default=1, help="How many Pod replicas (Redpanda brokers) will be deployed")
+@click.option('--brokers', '-b', default=1, help="How many pod replicas (redpanda brokers) will be deployed")
 
-def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1):
-    """
-    Deploy Redpanda on Kubernetes using Helm.
-        Args:
-        tls_enaled (str, mandatory): _description_. Defaults 'false'.
-        Install redpanda using LS (Transport Layer Security) for encrypted communication. Use false to avoid cofigure tls. Defaults 'false'.
-        
+def install(tls="false", version="5.8.5", namespace="default", brokers=1):
+    """Deploy Redpanda on Kubernetes using Helm.
 
-        Options:
-        --version (str, optional): _description_. Defaults to '5.8.5'.
-        Install the redpanda helm chart with the version specified.
-        
-        --namespace (str, optional): _description_. Defaults to 'default'.
-        Install the redpanda cluster in the namespace specified
-
-        --brokers (str, optional): _description_. Defaults to 1.
-        How many Pod replicas (Redpanda brokers) will be deployed.. Defaults to 1-
+    Args:
+        tls_enabled (str, optional): Install redpanda using LS (Transport Layer Security) for encrypted communication. Use false to avoid cofigure tls. Defaults to "false".
+        version (str, optional): Install the redpanda helm chart with the version specified. Defaults to "5.8.5".
+        namespace (str, optional): Install the redpanda cluster in the namespace specified. Defaults to "default".
+        brokers (int, optional): How many Pod replicas (Redpanda brokers) will be deployed. Defaults to 1.
     """
     try:
         # Agregar el repositorio de Helm de Redpanda
@@ -45,7 +36,7 @@ def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1
             click.echo(f"kubectl create namespace --namespace {namespace}")
             subprocess.run(["kubectl", "create", "namespace", namespace], check=True)
         
-        if tls_enabled.lower() == 'false':
+        if tls.lower() == 'false':
             data = {
                 'tls': {
                     'enabled': False
@@ -68,12 +59,10 @@ def install(tls_enabled="false", version="5.8.5", namespace="default", brokers=1
 @redpanda.command()
 @click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deleted')
 def delete(namespace):
-    """
-    Delete Redpanda in Kubernetes using Helm.
-    
-    Options:    
-    --namespace (str, optional): _description_. Defaults to 'default'.
-        Delete the redpanda cluster in the namespace specified
+    """Delete Redpanda in Kubernetes using Helm
+
+    Args:
+        namespace (str,optional): Delete the redpanda cluster in the namespace specified. Defaults set to 'default'
     """
     try:
         click.echo(f"helm uninstall redpanda --namespace {namespace}")
