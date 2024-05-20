@@ -58,7 +58,7 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
         return result  
 
 
-def install_repo(namespace: str, repo_name:str, operator_name: str) -> CompletedProcess[bytes]:
+def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str) -> CompletedProcess[bytes]:
     """Command for install a repo added in Helm
 
     Args:
@@ -72,7 +72,7 @@ def install_repo(namespace: str, repo_name:str, operator_name: str) -> Completed
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     path = pkg_resources.resource_filename("dp","resources")
-    values_path = next(Path(path).glob("flinkop-values.yaml"),'flink-values.yaml')
+    values_path = next(Path(path).glob(values_yaml), values_yaml)
     install_command = ['helm', '-n', namespace, 'install', '-f',
                            values_path , repo_name, operator_name, '--set', 'webhook.create=false']
     result = run_subprocess(install_command)

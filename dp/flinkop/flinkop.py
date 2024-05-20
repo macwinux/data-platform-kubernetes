@@ -23,4 +23,4 @@ def install(v: str):
     utils.create_ns('flink-jobs')
     utils.add_repo('flink-operator', argu.HELM_REPO+v)
     flink_op = 'flink-operator/flink-kubernetes-operator'
-    utils.install_repo('flink-operator', 'flink-operator', flink_op)
+    utils.install_repo('flink-operator', 'flink-operator', flink_op, "flinkop-values.yaml")

@@ -1,21 +1,24 @@
 import click
 import subprocess
 import yaml
+import utils.subprocess_com as utils
+import pkg_resources
+from pathlib import Path
 
 @click.group()
 def redpanda():
     """
-    Script para desplegar el chart de Redpanda utilizando Helm.
+    Install redpanda helm chart commad
     """
     pass
 
 @redpanda.command()
-@click.option('--tls', default='false', help='Set TLS configuration in Redpanda')
-@click.option('--version', default='5.8.5', help='Redpanda helm chat version')
+@click.option('--tls', '-t', default='false', help='Set TLS configuration in Redpanda')
+@click.option('--version', '-v', default='5.8.5', help='Redpanda helm chat version')
 @click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deployed')
 @click.option('--brokers', '-b', default=1, help="How many pod replicas (redpanda brokers) will be deployed")
 
-def install(tls="false", version="5.8.5", namespace="default", brokers=1):
+def install(tls: str,  version: str, namespace: str, brokers: str):
     """Deploy Redpanda on Kubernetes using Helm.
 
     Args:
@@ -24,19 +27,9 @@ def install(tls="false", version="5.8.5", namespace="default", brokers=1):
         namespace (str, optional): Install the redpanda cluster in the namespace specified. Defaults to "default".
         brokers (int, optional): How many Pod replicas (Redpanda brokers) will be deployed. Defaults to 1.
     """
-    try:
-        # Agregar el repositorio de Helm de Redpanda
-        subprocess.run(["helm", "repo", "add", "redpanda", "https://charts.redpanda.com"], check=True)
-        subprocess.run(["helm", "repo", "update"], check=True)
-        
-        # Crear el namespace si no existe
-        namespace_exists = subprocess.run(["kubectl", "get", "namespace", namespace], capture_output=True, text=True)
-        if namespace_exists.returncode != 0:
-            # El namespace no existe, crearlo
-            click.echo(f"kubectl create namespace --namespace {namespace}")
-            subprocess.run(["kubectl", "create", "namespace", namespace], check=True)
-        
-        if tls.lower() == 'false':
+    utils.create_ns(namespace)
+    utils.add_repo('redpanda', "https://charts.redpanda.com")
+    if tls.lower() == 'false':
             data = {
                 'tls': {
                     'enabled': False
@@ -45,17 +38,11 @@ def install(tls="false", version="5.8.5", namespace="default", brokers=1):
                     "replicas": brokers
                 }
             }
-            with open('values-redpanda.yaml', 'w') as file:
+            with open('resources/values-redpanda.yaml', 'w') as file:
                 yaml.dump(data, file, default_flow_style=False)
         
-        click.echo(f"helm install redpanda redpanda/redpanda --namespace {namespace} --values values-redpanda.yaml")
-        subprocess.run(["helm", "install", "redpanda", "redpanda/redpanda", "--namespace", namespace, "--values", "values-redpanda.yaml"], check=True)
-        click.echo("Redpanda deployment completed successfully!")
-    except subprocess.CalledProcessError as e:
-        click.echo(f"Error: {e}")
-        click.echo("Redpanda deployment has failed. Please check the error messages.")
-
-
+    utils.install_repo(namespace, 'redpanda', 'redpanda/redpanda', "values-redpanda.yaml")
+    
 @redpanda.command()
 @click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deleted')
 def delete(namespace):
