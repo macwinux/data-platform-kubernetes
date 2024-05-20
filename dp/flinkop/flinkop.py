@@ -13,7 +13,7 @@ def flinkop():
 @flinkop.command(name='install')
 @click.argument('v', type=str, required=False, default='1.8.0')
 def install(v: str):
-    """install flink operator for kubernetes
+    """install flink operator in kubernetes
 
     Args:
         v (str, optional): version that you want to install in kubernetes Defaults to '1.8.0'.
@@ -24,3 +24,11 @@ def install(v: str):
     utils.add_repo('flink-operator', argu.HELM_REPO+v)
     flink_op = 'flink-operator/flink-kubernetes-operator'
     utils.install_repo('flink-operator', 'flink-operator', flink_op)
+    
+@flinkop.command(name="uninstall")
+def uninstall():
+    """uninstall flink operator from kubernetes
+    """
+    #utils.helm_unisntall('flink-operator')
+    #utils.delete_ns('flink-operator')
+    #utils.delete_ns('flink-jobs')
