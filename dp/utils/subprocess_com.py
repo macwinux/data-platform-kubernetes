@@ -16,12 +16,35 @@ def create_ns(namespace: str)-> CompletedProcess[bytes]:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     
-    create_ns_flink_jobs = ['kubectl', 'create', 'ns', namespace]
-    result = run_subprocess(create_ns_flink_jobs)
+    create_ns = ['kubectl', 'create', 'ns', namespace]
+    result = run_subprocess(create_ns)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
-        click.echo(f'Failed creating the {namespace} namespace')
+        click.echo(f'Failed creating the namespace: {namespace}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'{namespace} namespace created')
+        click.echo('-------------------------------------------')
+        return result 
+
+def delete_ns(namespace: str) -> CompletedProcess[bytes]:
+    """Command that delete a namespace in kubernetes
+
+    Args:
+        namespace (str): kubernetes namespace
+
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    delete_ns = ['kubect', 'delete', 'ns', namespace]
+    result = run_subprocess(delete_ns)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed deleting the namespace: {namespace}')
         click.echo('-------------------------------------------')
         raise SystemError(result.stderr)
     else:
@@ -57,6 +80,28 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
         click.echo('-------------------------------------------')
         return result  
 
+def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
+    """Command that remove a repository in helm
+
+    Args:
+        repo_name (str): name of the repo in helm
+
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    helm_command = ['helm', 'repo', 'remove', repo_name]
+    result = run_subprocess(helm_command)
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed removing the repository {repo_name}')
+        click.echo('-------------------------------------------')  
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'{repo_name} removed')
+        click.echo('-------------------------------------------')
+        return result  
+
 
 def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str) -> CompletedProcess[bytes]:
     """Command for install a repo added in Helm
@@ -87,6 +132,29 @@ def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml:
         click.echo('-------------------------------------------')
         return result  
 
+def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes]:
+    """Command for uninstall all teh components intalled by a repo helm
+    
+    Args:
+        namspace (str): name of the namespace in kubernetes that contains the repo components installed
+        repo_name (str): name of the repo in helm
+        operator_name (str): operator from the repo that you want to install
+        
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    uninstall_command = ['helm', 'uninstall', operator_name,'-n',namespace]
+    result = run_subprocess(uninstall_command)
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed uninstaling the operator {operator_name}')
+        click.echo('-------------------------------------------')  
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'{operator_name} uninstalled')
+        click.echo('-------------------------------------------')
+        return result  
 
 def run_subprocess(commands: list) -> CompletedProcess[bytes]:
     """run a subprocess in the operating system

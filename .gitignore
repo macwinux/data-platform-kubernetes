@@ -1,2 +1,5 @@
 .venv/
 **/__pycache__/
+**/**/__pycache__/
+dp/flinkop/__pycache__/
+dp/utils/__pycache__/
