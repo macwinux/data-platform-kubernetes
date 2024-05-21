@@ -7,7 +7,8 @@
 3.  `pip install -r requirements.txt`
 4. Now, you can run for example, flink operator with:
 `dp.py flinkop install` or `dp.py flinkop install 1.8.0`
-
+or you can run redpanda heml chart with:
+`dp.py flink install -n redpanda`
 
 #### Run test
 `python -m unittest`
