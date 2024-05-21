@@ -1,0 +1,1 @@
+HELM_REPO: str = 'https://downloads.apache.org/flink/flink-kubernetes-operator-'
