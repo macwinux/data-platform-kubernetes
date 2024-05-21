@@ -51,10 +51,10 @@ def delete(namespace):
     Args:
         namespace (str,optional): Delete the redpanda cluster in the namespace specified. Defaults set to 'default'
     """
-    try:
-        click.echo(f"helm uninstall redpanda --namespace {namespace}")
-        subprocess.run(["helm", "uninstall", "redpanda", "--namespace", namespace], check=True)
-        
+    utils.uninstall_repo('redpanda', 'redpanda')
+    
+    #Al borrar el repo siguen quednao un pod de configuración y un job dentro del namespace donde se depliega redpanda que hay que borrar manualmente. Tmabién queda los pvc si son configurados.
+    try:   
         click.echo(f"kubectl delete pod --all --namespace {namespace}")
         subprocess.run(["kubectl", "delete", "pod", "--all","--namespace", namespace], check=True)
         
@@ -66,6 +66,9 @@ def delete(namespace):
     except subprocess.CalledProcessError as e:
         click.echo(f"Error: {e}")
         click.echo("Redpanda deletion has failed. Please check the error messages.")
+    
+    utils.delete_repo('redpanda')
+    utils.delete_ns('redpanda')
 
 if __name__ == '__main__':
     redpanda()
