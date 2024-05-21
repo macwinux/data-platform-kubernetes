@@ -13,5 +13,6 @@
 `python -m unittest`
 
 #### Create the binary 
+
 `pyinstaller -F --paths=dp .\dp\dp.py`
-Doesn't work right now
+The binary will be in dist folder.

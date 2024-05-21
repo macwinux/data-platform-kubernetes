@@ -1,5 +1,5 @@
 from unittest import TestCase, mock, main
-from .subprocess_com import create_ns, add_repo, install_repo, delete_ns, delete_repo, uninstall_repo
+from .subprocess_com import create_ns, add_repo, install_repo, delete_ns, delete_repo, uninstall_repo, check_os
 from subprocess import CompletedProcess
 
 class TestCreateNs(TestCase):
@@ -100,6 +100,6 @@ class TestUninstallRepo(TestCase):
           expected = CompletedProcess(args = "", returncode=1, stderr="Failed uninstalling a repo in Helm")
           mock_run.return_value = expected
           uninstall_repo("flink-operator", "flink-operator")
-
+        
 if __name__ == '__main__':
     main()
