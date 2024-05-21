@@ -1,7 +1,8 @@
-from pathlib import Path
+#from pathlib import Path
+#import pkg_resources
 import click
 from subprocess import CompletedProcess, run
-import pkg_resources
+import sys
 
 def create_ns(namespace: str)-> CompletedProcess[bytes]:
     """ Command that create a new namespace in kubernetes
@@ -116,8 +117,10 @@ def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    path = pkg_resources.resource_filename("dp","resources")
-    values_path = next(Path(path).glob(values_yaml), values_yaml)
+    #path = pkg_resources.resource_filename("dp","resources")
+    #values_path = next(Path(path).glob(values_yaml), values_yaml)
+    values_path = check_os(values_yaml)
+    
     install_command = ['helm', '-n', namespace, 'install', '-f',
                            values_path , repo_name, operator_name, '--set', 'webhook.create=false']
     result = run_subprocess(install_command)
@@ -167,3 +170,9 @@ def run_subprocess(commands: list) -> CompletedProcess[bytes]:
     """
     result = run(commands, shell=True, capture_output=True)
     return result 
+
+def check_os(values_yaml: str) -> str:
+    if sys.platform == "win32":
+        return "dp\\resources\\" + values_yaml
+    else:
+        return "dp/resources/" + values_yaml

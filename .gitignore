@@ -6,3 +6,4 @@ dp/utils/__pycache__/*
 dp.spec
 build/
 dist/
+.pytest_cache/
