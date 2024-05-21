@@ -39,7 +39,7 @@ def delete_ns(namespace: str) -> CompletedProcess[bytes]:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    delete_ns = ['kubect', 'delete', 'ns', namespace]
+    delete_ns = ['kubectl', 'delete', 'ns', namespace]
     result = run_subprocess(delete_ns)
     
     if result.returncode != 0:
@@ -49,7 +49,7 @@ def delete_ns(namespace: str) -> CompletedProcess[bytes]:
         raise SystemError(result.stderr)
     else:
         click.echo('-------------------------------------------')
-        click.echo(f'{namespace} namespace created')
+        click.echo(f'{namespace} namespace deleted')
         click.echo('-------------------------------------------')
         return result 
 

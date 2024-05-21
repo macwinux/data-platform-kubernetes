@@ -2,8 +2,6 @@
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
-import pkg_resources
-from pathlib import Path
 @click.group()
 def flinkop():
     """
@@ -29,7 +27,7 @@ def install(v: str):
 def delete():
     """Uninstall flink operator from kubernetes
     """
-    #utils.uninstall_repo('flink-operator')
-    #utils.delete_repo('flink-operator)
-    #utils.delete_ns('flink-operator')
-    #utils.delete_ns('flink-jobs')
+    utils.uninstall_repo('flink-operator', 'flink-operator')
+    utils.delete_repo('flink-operator')
+    utils.delete_ns('flink-operator')
+    utils.delete_ns('flink-jobs')

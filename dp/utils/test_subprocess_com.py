@@ -1,5 +1,5 @@
 from unittest import TestCase, mock, main
-from .subprocess_com import create_ns, add_repo, install_repo
+from .subprocess_com import create_ns, add_repo, install_repo, delete_ns, delete_repo, uninstall_repo
 from subprocess import CompletedProcess
 
 class TestCreateNs(TestCase):
@@ -20,6 +20,23 @@ class TestCreateNs(TestCase):
             mock_run.return_value = expected
             create_ns(namespace="flink-operator")
 
+class TestDeleteNs(TestCase):
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_delete_ns(self, mock_run):
+        expected = CompletedProcess(args = "", returncode=0, stdout="Deleted namespace in kubernetes")
+        mock_run.return_value = expected
+        response = delete_ns(namespace="flink-operator")
+        self.assertEqual(response.returncode, 0)
+        self.assertEqual(response.stdout, expected.stdout)
+    
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_failed_delete_ns(self, mock_run):
+        err_msg = "Failed creating namespace"
+        with self.assertRaises(SystemError):
+            expected = CompletedProcess(args = "", returncode=1, stderr=err_msg)
+            mock_run.return_value = expected
+            delete_ns(namespace="flink-operator")
+
 class TestAddRepo(TestCase):
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
     def test_add_repo(self, mock_run):
@@ -36,6 +53,22 @@ class TestAddRepo(TestCase):
           mock_run.return_value = expected
           add_repo("flink-operator-repo", "https://repo.com")
       
+class TestDeleteRepo(TestCase):
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_delete_repo(self, mock_run):
+        expected = CompletedProcess(args="", returncode=0, stdout="Repo deleted")
+        mock_run.return_value = expected
+        response = delete_repo("flink-operator-repo")
+        self.assertEqual(response.returncode, 0)
+        self.assertEqual(response.stdout, expected.stdout)
+        
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_filed_add_repo(self, mock_run):
+        with self.assertRaises(SystemError):
+          expected = CompletedProcess(args = "", returncode=1, stderr="Failed deleting a repo in Helm")
+          mock_run.return_value = expected
+          delete_repo("flink-operator-repo")
+      
 class TestInstallRepo(TestCase):
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
     def test_install_repo(self, mock_run):
@@ -51,7 +84,22 @@ class TestInstallRepo(TestCase):
           expected = CompletedProcess(args = "", returncode=1, stderr="Failed installing a repo in Helm")
           mock_run.return_value = expected
           install_repo("flink-operator", "flink-operator-repo", "flink-op-1.8.0", "flink-values.yaml")
-          
+
+class TestUninstallRepo(TestCase):
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_uninstall_repo(self, mock_run):
+        expected = CompletedProcess(args="", returncode=0, stdout="Repo uninstalled")
+        mock_run.return_value = expected
+        response = uninstall_repo("flink-operator", "flink-operator")
+        self.assertEqual(response.returncode, 0)
+        self.assertEqual(response.stdout, expected.stdout)
+        
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_filed_install_repo(self, mock_run):
+        with self.assertRaises(SystemError):
+          expected = CompletedProcess(args = "", returncode=1, stderr="Failed uninstalling a repo in Helm")
+          mock_run.return_value = expected
+          uninstall_repo("flink-operator", "flink-operator")
 
 if __name__ == '__main__':
     main()

@@ -11,3 +11,7 @@
 
 #### Run test
 `python -m unittest`
+
+#### Create the binary 
+`pyinstaller -F --paths=dp .\dp\dp.py`
+Doesn't work right now
