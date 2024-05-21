@@ -41,7 +41,7 @@ class TestInstallRepo(TestCase):
     def test_install_repo(self, mock_run):
         expected = CompletedProcess(args="", returncode=0, stdout="Repo installed")
         mock_run.return_value = expected
-        response = install_repo("flink-operator-repo", "flink-op-1.8.0")
+        response = install_repo("flink-operator-repo", "flink-op-1.8.0", "flink-op-1.8.0", "flink-values.yaml")
         self.assertEqual(response.returncode, 0)
         self.assertEqual(response.stdout, expected.stdout)
         
@@ -50,7 +50,7 @@ class TestInstallRepo(TestCase):
         with self.assertRaises(SystemError):
           expected = CompletedProcess(args = "", returncode=1, stderr="Failed installing a repo in Helm")
           mock_run.return_value = expected
-          install_repo("flink-operator-repo", "flink-op-1.8.0")
+          install_repo("flink-operator", "flink-operator-repo", "flink-op-1.8.0", "flink-values.yaml")
           
 
 if __name__ == '__main__':
