@@ -101,5 +101,14 @@ class TestUninstallRepo(TestCase):
           mock_run.return_value = expected
           uninstall_repo("flink-operator", "flink-operator")
         
+class TestCheckOS(TestCase):
+    @mock.patch("sys.platform","linux")
+    def test_linux(self):
+        self.assertEqual(check_os("values.yaml"),"dp/resources/values.yaml")
+    
+    @mock.patch("sys.platform","win32")
+    def test_windows(self):
+        self.assertEqual(check_os("values.yaml"),"dp\\resources\\values.yaml")
+
 if __name__ == '__main__':
     main()
