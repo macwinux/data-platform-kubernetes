@@ -2,6 +2,8 @@
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
+import subprocess
+
 @click.group()
 def flinkop():
     """
@@ -31,3 +33,19 @@ def delete():
     utils.delete_repo('flink-operator')
     utils.delete_ns('flink-operator')
     utils.delete_ns('flink-jobs')
+
+@flinkop.command(name="deploy-test")
+@click.option('--namespace', '-n', default='default', help='Namespace where app is deployed')
+@click.argument('app_yaml', type=str, required=True)
+def deploy_test(app_yaml: str, namespace):
+    """Deploy an app using flink operator in kubernetes
+
+    Args:
+        app_yaml (str): _description_
+        namespace (_type_): _description_
+    """
+    try:
+        subprocess.run(["kubectl", "create", "-f", utils.check_os(app_yaml), "--namespace", namespace], check=True)
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error: {e}")
+        click.echo(f"{app_yaml} failed. Please check the error messages.")

@@ -4,6 +4,7 @@ import yaml
 import utils.subprocess_com as utils
 import pkg_resources
 from pathlib import Path
+import sys
 
 @click.group()
 def redpanda():
@@ -38,7 +39,7 @@ def install(tls: str,  version: str, namespace: str, brokers: str):
                     "replicas": brokers
                 }
             }
-            with open('resources/values-redpanda.yaml', 'w') as file:
+            with open('dp/resources/values-redpanda.yaml', 'w') as file:
                 yaml.dump(data, file, default_flow_style=False)
         
     utils.install_repo(namespace, 'redpanda', 'redpanda/redpanda', "values-redpanda.yaml")
@@ -69,6 +70,76 @@ def delete(namespace):
     
     utils.delete_repo('redpanda')
     utils.delete_ns('redpanda')
+
+@redpanda.command()
+@click.option('--namespace', '-n', default='default', help='Namespace where redpanda is installed')
+@click.argument('topic_name', type=str, required=True)
+def create_topic(namespace: str, topic_name: str):
+    """Create a topic in Redpanda
+
+    Args:
+        namespace (str, optional): _description_
+        topic_name (str, required): _description_
+    """
+    try:
+        command = f'kubectl --namespace {namespace} exec -i -t redpanda-0 -c redpanda -- rpk topic create {topic_name}'
+
+        if sys.platform == "win32":
+            subprocess.run(["powershell", "-Command", command], check=True)
+        else:
+            subprocess.run(["bash", "-c", command], check=True)
+  
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error: {e}")
+        click.echo("Redpanda topic creation has failed. Please check the error messages.")
+
+@redpanda.command()
+@click.option('--namespace', '-n', default='default', help='Namespace where redpanda is installed')
+@click.argument('topic_name', type=str, required=True)
+def delete_topic(namespace: str, topic_name: str):
+    """Delete a topic in Redpanda
+
+    Args:
+        namespace (str, optional): _description_
+        topic_name (str, required): _description_
+    """
+    try:
+        command = f'kubectl --namespace {namespace} exec -i -t redpanda-0 -c redpanda -- rpk topic delete {topic_name}'
+
+        if sys.platform == "win32":
+            subprocess.run(["powershell", "-Command", command], check=True)
+        else:
+            subprocess.run(["bash", "-c", command], check=True)
+  
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error: {e}")
+        click.echo("Redpanda topic deletion has failed. Please check the error messages.")
+
+@redpanda.command()
+@click.option('--namespace', '-n', default='default', help='Namespace where redpanda is installed')
+@click.argument('topic_name', type=str, required=True)
+def produce_messages(namespace: str, topic_name: str):
+    """Produce CLI messages into a Redpanda topic
+
+    Args:
+        namespace (str, optional): _description_
+        topic_name (str, required): _description_
+    """
+    try:
+        click.echo("Produce messages:")
+        command = f'kubectl --namespace {namespace} exec -i -t redpanda-0 -c redpanda -- rpk topic produce {topic_name}'
+
+        if sys.platform == "win32":
+            subprocess.run(["powershell", "-Command", command])
+        else:
+            subprocess.run(["bash", "-c", command], check=True)
+  
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 130:  # 130 is the exit code for SIGINT (Ctrl+C)
+            click.echo("Process interrupted by user. Exiting gracefully...")
+        else:
+            click.echo(f"Error: {e}")
+            click.echo("Redpanda message producer has failed. Please check the error messages.")
 
 if __name__ == '__main__':
     redpanda()

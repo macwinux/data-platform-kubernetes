@@ -1,0 +1,47 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: flink-minio-example
+spec:
+  image: santrac10/flink_pipeline_redpanda:latest
+  flinkVersion: v1_17
+  ingress:
+    template: "flink.web.edocc.indra.es/{{namespace}}/{{name}}(/|$)(.*)"
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+  serviceAccount: flink
+  podTemplate:
+    spec:
+      containers:
+        # Do not change the main container name
+        - name: flink-main-container
+          volumeMounts:
+            - mountPath: /opt/flink/downloads
+              name: downloads
+      volumes:
+        - name: downloads
+          emptyDir: { }
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+    podTemplate:
+      spec:
+        initContainers:
+          # Sample init container for fetching remote artifacts
+          - name: alpine
+            image: alpine
+            volumeMounts:
+              - mountPath: /opt/flink/downloads
+                name: downloads
+            command: ["/bin/sh", "-c", "apk add curl; apk add openssl; apk add wget; echo '10.24.1.26 minio-s3.edocc.indra.es' >> /etc/hosts; wget -O /opt/flink/downloads/download-minio.sh https://gist.githubusercontent.com/macwinux/58337f53f3f3f91d2f95296e0dc8318b/raw/764bcfc770a2fbbed780549ef1c1f177529b511e/download-minio.sh; chmod 755 /opt/flink/downloads/download-minio.sh; sh /opt/flink/downloads/download-minio.sh minio-s3.edocc.indra.es minio minio123 jars FlinkDataPipeline.jar /opt/flink/downloads/FlinkDataPipeline.jar;"]
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/downloads/FlinkDataPipeline.jar
+    parallelism: 2
