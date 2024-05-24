@@ -2,8 +2,6 @@ import click
 import subprocess
 import yaml
 import utils.subprocess_com as utils
-import pkg_resources
-from pathlib import Path
 
 @click.group()
 def redpanda():

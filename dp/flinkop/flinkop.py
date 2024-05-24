@@ -2,6 +2,9 @@
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
+from os import path
+from pathlib import Path
+import glob
 @click.group()
 def flinkop():
     """
@@ -17,6 +20,11 @@ def install(v: str):
         v (str, optional): version that you want to install in kubernetes Defaults to '1.8.0'.
     
     """
+    #click.echo(path.dirname(__file__))
+    #absolute = str(Path(__file__).parent.parent)
+    #resources = path.join(absolute, 'resources')
+    #for filepath in glob.iglob(resources + '/*'):
+    #    click.echo(filepath)
     utils.create_ns('flink-operator')
     utils.create_ns('flink-jobs')
     utils.add_repo('flink-operator', argu.HELM_REPO+v)
