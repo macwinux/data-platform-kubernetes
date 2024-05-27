@@ -162,7 +162,7 @@ def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes
         click.echo('-------------------------------------------')
         return result  
 
-def run_subprocess(commands: list) -> CompletedProcess[bytes]:
+def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]:
     """run a subprocess in the operating system
 
     Args:
@@ -171,5 +171,38 @@ def run_subprocess(commands: list) -> CompletedProcess[bytes]:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    result = run(commands, shell=True, capture_output=True)
+    #This block if else is to check if the run command exectued by the redpanda prodcuce message function. This function send a message in input parameter.
+    if input == None:
+        result = run(commands, shell=True, capture_output=True)
+    else:
+        result = run(commands, shell=True, capture_output=True, input=bytes(input,'utf-8'))
+
     return result 
+
+
+def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
+    """Helper function to run kubectl delete commands and handle errors.
+
+    Args:
+        resource_type (str): _description_
+        namespace (str): _description_
+        resource_name (str, optional): _description_. Defaults to "--all".
+
+    Raises:
+        SystemError: _description_
+    """
+    delete_command = ["kubectl", "delete", resource_type, resource_name, "--namespace", namespace]
+    result = run_subprocess(delete_command)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed deleting the {resource_type} {resource_name} in namespace {namespace}')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f' {resource_type} {resource_name} in {namespace} deleted')
+        click.echo('-------------------------------------------')
+        return result
+    
