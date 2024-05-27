@@ -6,7 +6,6 @@ import sys
 from os import path
 from pathlib import Path
 
-
 def create_ns(namespace: str)-> CompletedProcess[bytes]:
     """ Command that create a new namespace in kubernetes
 

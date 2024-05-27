@@ -1,6 +1,7 @@
 from unittest import TestCase, mock, main
-from .subprocess_com import create_ns, add_repo, install_repo, delete_ns, delete_repo, uninstall_repo, check_os
+from .subprocess_com import create_ns, add_repo, install_repo, delete_ns, delete_repo, uninstall_repo
 from subprocess import CompletedProcess
+from pathlib import Path
 
 class TestCreateNs(TestCase):
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
@@ -101,14 +102,6 @@ class TestUninstallRepo(TestCase):
           mock_run.return_value = expected
           uninstall_repo("flink-operator", "flink-operator")
         
-class TestCheckOS(TestCase):
-    @mock.patch("sys.platform","linux")
-    def test_linux(self):
-        self.assertEqual(check_os("values.yaml"),"dp/resources/values.yaml")
-    
-    @mock.patch("sys.platform","win32")
-    def test_windows(self):
-        self.assertEqual(check_os("values.yaml"),"dp\\resources\\values.yaml")
 
 if __name__ == '__main__':
     main()

@@ -15,5 +15,5 @@ or you can run redpanda heml chart with:
 
 #### Create the binary 
 
-`pyinstaller -F --paths=dp .\dp\dp.py`
+`pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py`
 The binary will be in dist folder.

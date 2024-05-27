@@ -2,10 +2,9 @@
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
-import subprocess
 from os import path
 from pathlib import Path
-
+import glob
 @click.group()
 def flinkop():
     """
@@ -21,6 +20,11 @@ def install(v: str):
         v (str, optional): version that you want to install in kubernetes Defaults to '1.8.0'.
     
     """
+    #click.echo(path.dirname(__file__))
+    #absolute = str(Path(__file__).parent.parent)
+    #resources = path.join(absolute, 'resources')
+    #for filepath in glob.iglob(resources + '/*'):
+    #    click.echo(filepath)
     utils.create_ns('flink-operator')
     utils.create_ns('flink-jobs')
     utils.add_repo('flink-operator', argu.HELM_REPO+v)
@@ -46,10 +50,17 @@ def deploy_test(app_yaml: str, namespace):
         app_yaml (str): _description_
         namespace (_type_): _description_
     """
-    try:
-        absolute = str(Path(__file__).parent.parent)
-        values_path = path.join(absolute, 'resources', app_yaml)
-        subprocess.run(["kubectl", "create", "-f", values_path, "--namespace", namespace], check=True)
-    except subprocess.CalledProcessError as e:
-        click.echo(f"Error: {e}")
-        click.echo(f"{app_yaml} failed. Please check the error messages.")
+    absolute = str(Path(__file__).parent.parent)
+    values_path = path.join(absolute, 'resources', app_yaml)
+    command = ["kubectl", "create", "-f", values_path, "--namespace", namespace]
+    result = utils.run_subprocess(command)
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed deploying the operator {app_yaml}')
+        click.echo('-------------------------------------------')  
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'{app_yaml} installed')
+        click.echo('-------------------------------------------')
+        return result
