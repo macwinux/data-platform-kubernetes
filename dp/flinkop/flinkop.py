@@ -3,6 +3,8 @@ import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
 import subprocess
+from os import path
+from pathlib import Path
 
 @click.group()
 def flinkop():
@@ -45,7 +47,9 @@ def deploy_test(app_yaml: str, namespace):
         namespace (_type_): _description_
     """
     try:
-        subprocess.run(["kubectl", "create", "-f", utils.check_os(app_yaml), "--namespace", namespace], check=True)
+        absolute = str(Path(__file__).parent.parent)
+        values_path = path.join(absolute, 'resources', app_yaml)
+        subprocess.run(["kubectl", "create", "-f", values_path, "--namespace", namespace], check=True)
     except subprocess.CalledProcessError as e:
         click.echo(f"Error: {e}")
         click.echo(f"{app_yaml} failed. Please check the error messages.")
