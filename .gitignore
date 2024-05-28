@@ -1,1 +1,9 @@
-venv/
+.venv/
+**/__pycache__/
+**/**/__pycache__/
+dp/flinkop/__pycache__/*
+dp/utils/__pycache__/*
+dp.spec
+build/
+dist/
+.pytest_cache/
