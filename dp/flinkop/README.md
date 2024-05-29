@@ -1,20 +1,27 @@
 # Flink Operator
 
-### Commands
+## Commands
+
+### Install
 
 `dp flinkop install`
 
 Options
 
-- v: version of the flink operator.
+- `--version` or `-v`: version of the flink operator.
+
+### Delete
 
 `dp flinkop delete`
 
-`dp flinkop deploy-test`
+
+### Deploy a test
+
+`dp flinkop deploy-test -n test test-deploy.yaml`
 
 Options
 
-- namespace: namespace where to deploy
+- `--namespace` or `-n`: namespace where to deploy
 
 Arguments
 - Yaml to deploy with flink deployment.
