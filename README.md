@@ -21,3 +21,5 @@ The binary will be in dist folder.
 [Flink Operator](dp/flinkop/README.md)
 
 [Redpanda](dp/redpanda_helm/README.md)
+
+[ScyllaDB](dp/scylladb/README.md)
