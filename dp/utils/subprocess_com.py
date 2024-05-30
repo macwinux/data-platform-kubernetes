@@ -2,7 +2,6 @@
 #import pkg_resources
 import click
 from subprocess import CompletedProcess, run
-import sys
 from os import path
 from pathlib import Path
 
@@ -56,6 +55,21 @@ def delete_ns(namespace: str) -> CompletedProcess[bytes]:
         click.echo('-------------------------------------------')
         return result 
 
+def update_helm():
+    """Command that update helm
+    """
+    helm_command = ['helm', 'repo', 'update']
+    result = run_subprocess(helm_command)
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo('Failed updating helm')
+        click.echo('-------------------------------------------')  
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo('helm repo updated')
+        click.echo('-------------------------------------------')
+        return result  
 
 def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
     """Command that add a new repository in helm
@@ -106,7 +120,7 @@ def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
         return result  
 
 
-def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str) -> CompletedProcess[bytes]:
+def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str = None) -> CompletedProcess[bytes]:
     """Command for install a repo added in Helm
 
     Args:
@@ -119,13 +133,14 @@ def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    #path = pkg_resources.resource_filename("dp","resources")
-    #values_path = next(Path(path).glob(values_yaml), values_yaml)
-    absolute = str(Path(__file__).parent.parent)
-    values_path = path.join(absolute, 'resources', values_yaml)
-    
-    install_command = ['helm', '-n', namespace, 'install', '-f',
-                           values_path , repo_name, operator_name, '--set', 'webhook.create=false']
+    if values_yaml is not None:
+        absolute = str(Path(__file__).parent.parent)
+        values_path = path.join(absolute, 'resources', values_yaml)
+        install_command = ['helm', '-n', namespace, 'install', '-f',
+                           values_path , repo_name, operator_name]
+    else:
+        install_command = ['helm', '-n', namespace, 'install', repo_name, operator_name]
+
     result = run_subprocess(install_command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -180,13 +195,37 @@ def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]
     return result 
 
 
+def run_kubectl_apply(resource_url: str) -> CompletedProcess[bytes]:
+    """Helper function to run kubectl apply commands froma  file or url
+
+    Args:
+        resource_url (str): url for the file that you want to run
+
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    command = ["kubectl", "apply", '-f', resource_url]
+    result = run_subprocess(command)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed applying the file {resource_url}')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f' Applying the file {resource_url}')
+        click.echo('-------------------------------------------')
+        return result
+
 def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
 
     Args:
-        resource_type (str): _description_
-        namespace (str): _description_
-        resource_name (str, optional): _description_. Defaults to "--all".
+        resource_type (str): kind of resource that you want to delete
+        namespace (str): namespace where is the resource
+        resource_name (str, optional): name of the resource that you want to delete
 
     Raises:
         SystemError: _description_
@@ -205,4 +244,3 @@ def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = 
         click.echo(f' {resource_type} {resource_name} in {namespace} deleted')
         click.echo('-------------------------------------------')
         return result
-    
