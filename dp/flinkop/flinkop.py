@@ -1,4 +1,3 @@
-
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
@@ -43,11 +42,40 @@ def deploy_test(app_yaml: str, namespace):
     """Deploy an app using flink operator in kubernetes
 
     Args:
-        app_yaml (str): _description_
-        namespace (_type_): _description_
+        app_yaml (str, required): name of the yaml file where the flink app is defined. It should be saved in resources directory.
+        namespace (str, optional): namespace where the app will be deployed
     """
+    
     absolute = str(Path(__file__).parent.parent)
     values_path = path.join(absolute, 'resources', app_yaml)
+    command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_input"]
+    result = utils.run_subprocess(command)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed creating the topic "flink-input"')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'Topic "flink-input" created!')
+        click.echo('-------------------------------------------')
+    
+    command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_output"]
+    result = utils.run_subprocess(command)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed creating the topic flink-output')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'Topic flink-output created!')
+        click.echo('-------------------------------------------')
+    
     command = ["kubectl", "create", "-f", values_path, "--namespace", namespace]
     result = utils.run_subprocess(command)
     if result.returncode != 0:
