@@ -23,3 +23,5 @@ The binary will be in dist folder.
 [Redpanda](dp/redpanda_helm/README.md)
 
 [ScyllaDB](dp/scylladb/README.md)
+
+[Sparkop](dp/sparkop/README.md)
