@@ -14,7 +14,7 @@ fullnameOverride: ''
 hostNetworking: false
 nameOverride: ''
 racks:
-- members: 2
+- members: 1
   name: us-east-1a
   resources:
     limits:
