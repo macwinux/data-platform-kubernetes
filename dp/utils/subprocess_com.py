@@ -1,5 +1,6 @@
 #from pathlib import Path
 #import pkg_resources
+import time
 import click
 from subprocess import CompletedProcess, run
 from os import path
@@ -177,45 +178,29 @@ def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes
         click.echo('-------------------------------------------')
         return result  
 
-def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]:
-    """run a subprocess in the operating system
-
-    Args:
-        commands (list): list of command to run in the operating system.
-
-    Returns:
-        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
-    """
-    #This block if else is to check if the run command exectued by the redpanda prodcuce message function. This function send a message in input parameter.
-    if input == None:
-        result = run(commands, shell=True, capture_output=True)
-    else:
-        result = run(commands, shell=True, capture_output=True, input=bytes(input,'utf-8'))
-
-    return result 
-
-
-def run_kubectl_apply(resource_url: str) -> CompletedProcess[bytes]:
+def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
     """Helper function to run kubectl apply commands froma  file or url
 
     Args:
-        resource_url (str): url for the file that you want to run
+        resource_yaml (str): yaml file that you want to run
 
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    command = ["kubectl", "apply", '-f', resource_url]
+    absolute = str(Path(__file__).parent.parent)
+    resource_path = path.join(absolute, 'resources', resource_yaml)
+    command = ["kubectl", "apply", '-f', resource_path]
     result = run_subprocess(command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
-        click.echo(f'Failed applying the file {resource_url}')
+        click.echo(f'Failed applying the file {resource_yaml}')
         click.echo(f'Error: {result.stderr}')
         click.echo('-------------------------------------------')
         raise SystemError(result.stderr)
     else:
         click.echo('-------------------------------------------')
-        click.echo(f' Applying the file {resource_url}')
+        click.echo(f' Applying the file {resource_yaml}')
         click.echo('-------------------------------------------')
         return result
 
@@ -244,3 +229,79 @@ def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = 
         click.echo(f' {resource_type} {resource_name} in {namespace} deleted')
         click.echo('-------------------------------------------')
         return result
+    
+def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
+    """Helper function to run kubectl delete commands and handle errors.
+
+    Args:
+        resource_yaml (str): yaml file that contains the service that you want to delete
+    Raises:
+        SystemError: _description_
+    """
+    absolute = str(Path(__file__).parent.parent)
+    resource_path = path.join(absolute, 'resources', resource_yaml)
+    delete_command = ["kubectl", "delete", "-f", resource_path]
+    result = run_subprocess(delete_command)
+    
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed deleting resource: {resource_yaml}')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'{resource_yaml} deleted')
+        click.echo('-------------------------------------------')
+        return result
+    
+def wait_deployment(namespace: str, selector: str, retries: int = 5, t: int = 5) -> bool:
+    """wait a deployment through a retry policy
+
+    Args:
+        namespace (str): namespace where the selector is deployed
+        selector (str): selector name
+        retries (int, optional):Number of retries. Defaults to 5.
+        t (int, optional): time to sleep until next retry. Defaults to 5.
+
+    Returns:
+        bool: _description_
+    """
+    for retry in range(retries):
+        command = ["kubectl", "get", "pod", "-n", namespace, "-l", selector]
+        result = run_subprocess(command)
+        ready = (result.stdout.split(b"\n")[1]).decode()
+        if "1/1" and "Running" in ready:
+            click.echo('-------------------------------------------')
+            click.echo(f"{namespace}:{selector} is ready")
+            click.echo('-------------------------------------------')
+            return True
+        else:
+            click.echo('-------------------------------------------')
+            click.echo(f"{namespace}:{selector} is not ready after {retry} retry")
+            click.echo('-------------------------------------------')
+            time.sleep(t)
+    click.echo('-------------------------------------------')        
+    click.echo(f"{namespace}:{selector} is not deployed after {retries} retries.")
+    click.echo('-------------------------------------------')
+    SystemError(f"{namespace}:{selector} is not deployed after {retries} retries.")
+    
+    
+    
+
+def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]:
+    """run a subprocess in the operating system
+
+    Args:
+        commands (list): list of command to run in the operating system.
+
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    #This block if else is to check if the run command exectued by the redpanda prodcuce message function. This function send a message in input parameter.
+    if input == None:
+        result = run(commands, shell=True, capture_output=True)
+    else:
+        result = run(commands, shell=True, capture_output=True, input=bytes(input,'utf-8'))
+
+    return result 
