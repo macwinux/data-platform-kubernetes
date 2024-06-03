@@ -40,13 +40,20 @@ jobs:
 
   pyinstaller-build:
 
-    runs-on: <windows-latest / ubuntu-latest>
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['windows-latest', 'ubuntu-latest']
+
     steps:
-    - name: PyInstaller Action
-      uses: Martin005/pyinstaller-action@v1.2.0
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
       with:
-          python_ver: '3.11'
-          spec: 'dp/dp.py'
-          requirements: 'requirements.txt'
-          upload_exe_with_name: 'dp'
-          options: --F, --paths=dp, --add-data="dp/resources:resources",      
+        python-version: 3.11
+
+    - run: pip install -r requirements.txt pyinstaller
+    - run: pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*
