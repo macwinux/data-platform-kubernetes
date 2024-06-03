@@ -48,7 +48,24 @@ jobs:
         python-version: 3.11
 
     - run: pip install -r requirements.txt pyinstaller
-    - run: pyinstaller -F -n dp.exe --paths=dp --add-data="dp/resources:resources" .\dp\dp.py 
+    - run: pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py 
     - uses: actions/upload-artifact@v4
       with:
+        name: windows
+        path: dist/dp.exe
+
+  pyinstaller-linux:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - run: pip install -r requirements.txt pyinstaller
+    - run: pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux
         path: dist/*
