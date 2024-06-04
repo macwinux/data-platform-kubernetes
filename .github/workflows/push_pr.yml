@@ -38,22 +38,22 @@ jobs:
       run: |
         pytest
 
-  pyinstaller:
-    needs: build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.11
-
-    - run: pip install -r requirements.txt pyinstaller
-    - run: pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.os }}
-        path: dist/dp*
+#  pyinstaller:
+#    needs: build
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
+#    steps:
+#    - uses: actions/checkout@v4
+#    - uses: actions/setup-python@v5
+#      with:
+#        python-version: 3.11
+#
+#    - run: pip install -r requirements.txt pyinstaller
+#    - run: pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py 
+#    - uses: actions/upload-artifact@v4
+#      with:
+#        name: ${{ matrix.os }}
+#        path: dist/dp*
