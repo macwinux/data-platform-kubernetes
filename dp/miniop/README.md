@@ -24,7 +24,7 @@ Options
 
 - `--namespace` or `-n` Namespace where MinIO tenant will be deployed
  
- ### Produce Messages
+ ### Delete tenant
 
 `dp miniop delete-tenant -n minio-tenant`
 
