@@ -1,4 +1,4 @@
-# Redpanda
+# MinIO
 
 ## Commands
 
@@ -24,7 +24,7 @@ Options
 
 - `--namespace` or `-n` Namespace where MinIO tenant will be deployed
  
- ### Delete tenant
+ ### Delete Tenant
 
 `dp miniop delete-tenant -n minio-tenant`
 
