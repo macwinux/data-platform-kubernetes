@@ -1,0 +1,39 @@
+agentImage:
+  repository: scylladb/scylla-manager-agent
+  tag: 2.2.1
+alternator:
+  enabled: false
+  port: 8000
+  writeIsolation: always
+automaticOrphanedNodeCleanup: false
+backups: []
+cpuset: false
+datacenter: us-east-1
+developerMode: false
+fullnameOverride: ''
+hostNetworking: false
+nameOverride: ''
+racks:
+- members: 1
+  name: us-east-1a
+  resources:
+    limits:
+      cpu: 1
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 4Gi
+  scyllaAgentConfig: scylla-agent-config
+  scyllaConfig: scylla-config
+  storage:
+    capacity: 10Gi
+repairs: []
+scyllaImage:
+  repository: scylladb/scylla
+  tag: 4.3.0
+serviceAccount:
+  annotations: {}
+  create: true
+serviceMonitor:
+  create: false
+sysctls: []

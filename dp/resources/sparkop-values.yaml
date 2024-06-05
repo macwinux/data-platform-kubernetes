@@ -1,0 +1,5 @@
+image:
+  repository: kubeflow/spark-operator
+  tag: v1beta2-1.4.5-3.5.0
+sparkJobNamespaces:
+  - spark-jobs

@@ -13,9 +13,9 @@ def redpanda():
 
 @redpanda.command()
 @click.option('--tls', '-t', default='false', help='Set TLS configuration in Redpanda')
-@click.option('--version', '-v', default='5.8.5', help='Redpanda helm chat version')
+@click.option('--version', '-v', default='5.8.5', help='Redpanda helm chart version')
 @click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deployed')
-@click.option('--brokers', '-b', default=1, help="How many pod replicas (redpanda brokers) will be deployed")
+@click.option('--brokers', '-b', default=1, help="How many replica pods (redpanda brokers) will be deployed")
 
 def install(tls: str,  version: str, namespace: str, brokers: str):
     """Deploy Redpanda on Kubernetes using Helm.
@@ -75,8 +75,8 @@ def create_topic(namespace: str, topic_name: str):
     """Create a topic in Redpanda
 
     Args:
-        namespace (str, optional): _description_
-        topic_name (str, required): _description_
+        namespace (str, optional): Namespace where the Redpanda cluster is created.
+        topic_name (str, required): Name of the Topic
     """
     create_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", topic_name]
     result = utils.run_subprocess(create_command)
@@ -99,8 +99,8 @@ def delete_topic(namespace: str, topic_name: str):
     """Delete a topic in Redpanda
 
     Args:
-        namespace (str, optional): _description_
-        topic_name (str, required): _description_
+        namespace (str, optional): Namespace where the Redpanda cluster is created.
+        topic_name (str, required): Name of the Topic
     """
     delete_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "delete", topic_name]
     result = utils.run_subprocess(delete_command)
@@ -131,7 +131,7 @@ def produce_messages(namespace: str, topic_name: str, message: str, count: int):
         count (int, required): numbers of message repetitions
 
     Raises:
-        SystemError: _description_
+        SystemError: Error with the stderr from the subprocess
     """
     produce_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "produce", topic_name]
     input_messages = "\n".join([f"{message} {i+1}" for i in range(count)]) + "\n"

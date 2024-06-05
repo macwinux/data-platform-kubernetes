@@ -17,3 +17,11 @@ or you can run redpanda heml chart with:
 
 `pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py`
 The binary will be in dist folder.
+
+[Flink Operator](dp/flinkop/README.md)
+
+[Redpanda](dp/redpanda_helm/README.md)
+
+[ScyllaDB](dp/scylladb/README.md)
+
+[Sparkop](dp/sparkop/README.md)

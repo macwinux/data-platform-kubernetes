@@ -1,0 +1,7 @@
+requestAutoCert: true
+tenant:
+  pools:
+    - servers: 1 # Configurar un solo servidor por pool
+      name: "pool-0"
+      volumesPerServer: 1
+      size: "10Gi"
