@@ -33,7 +33,7 @@ def get_jwt():
     """Get the MinIO Operator JSON Web Token (JWT) saved as a Kubernetes Secret for controlling access to the Operator Console.
     """
     command=["kubectl", "get", "secret", "console-sa-secret", "-o", "go-template='{{.data.token | base64decode}}'", "-n", "minio-operator"]
-    result=utils.run_subprocess(command)
+    result=utils.__run_subprocess(command)
     click.echo('-------------------------------------------')
     click.echo(f"JWT: {(result.stdout).decode()}")
     click.echo('-------------------------------------------')    

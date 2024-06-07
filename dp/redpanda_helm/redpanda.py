@@ -79,7 +79,7 @@ def create_topic(namespace: str, topic_name: str):
         topic_name (str, required): Name of the Topic
     """
     create_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", topic_name]
-    result = utils.run_subprocess(create_command)
+    result = utils.__run_subprocess(create_command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -103,7 +103,7 @@ def delete_topic(namespace: str, topic_name: str):
         topic_name (str, required): Name of the Topic
     """
     delete_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "delete", topic_name]
-    result = utils.run_subprocess(delete_command)
+    result = utils.__run_subprocess(delete_command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -136,7 +136,7 @@ def produce_messages(namespace: str, topic_name: str, message: str, count: int):
     produce_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "produce", topic_name]
     input_messages = "\n".join([f"{message} {i+1}" for i in range(count)]) + "\n"
   
-    result = utils.run_subprocess(produce_command, input=input_messages)
+    result = utils.__run_subprocess(produce_command, input=input_messages)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')

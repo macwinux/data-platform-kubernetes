@@ -43,7 +43,7 @@ def deploy_test(app_yaml: str):
     absolute = str(Path(__file__).parent.parent)
     values_path = path.join(absolute, 'resources', app_yaml)
     command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_input"]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -57,7 +57,7 @@ def deploy_test(app_yaml: str):
         click.echo('-------------------------------------------')
     
     command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_output"]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -71,7 +71,7 @@ def deploy_test(app_yaml: str):
         click.echo('-------------------------------------------')
     
     command = ["kubectl", "create", "-f", values_path, "--namespace", "spark-jobs"]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')
         click.echo(f'Failed deploying the operator {app_yaml}')
