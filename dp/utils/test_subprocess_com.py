@@ -15,11 +15,19 @@ class TestCreateNs(TestCase):
 
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
     def test_failed_create_ns(self, mock_run):
-        err_msg = "Failed creating namespace"
+        err_msg = "Error creating namespace"
         with self.assertRaises(SystemError):
             expected = CompletedProcess(args = "", returncode=1, stderr=err_msg)
             mock_run.return_value = expected
             create_ns(namespace="flink-operator")
+    
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_ns_already_exists(self, mock_run):
+        err_msg = "Error (AlreadyExists): namespace flink-operator already exits"
+        expected = CompletedProcess(args = "", returncode=1, stderr=err_msg)
+        mock_run.return_value = expected
+        response = create_ns(namespace="flink-operator")
+        self.assertEqual(response.returncode, 1)
 
 class TestDeleteNs(TestCase):
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
@@ -32,11 +40,19 @@ class TestDeleteNs(TestCase):
     
     @mock.patch("dp.utils.subprocess_com.run_subprocess")
     def test_failed_delete_ns(self, mock_run):
-        err_msg = "Failed creating namespace"
+        err_msg = "Error creating the namespace"
         with self.assertRaises(SystemError):
             expected = CompletedProcess(args = "", returncode=1, stderr=err_msg)
             mock_run.return_value = expected
             delete_ns(namespace="flink-operator")
+
+    @mock.patch("dp.utils.subprocess_com.run_subprocess")
+    def test_ns_not_exits(self, mock_run):
+        err_msg = "Error (NotFound): namespace flink-operator not found"
+        expected = CompletedProcess(args = "", returncode=1, stderr=err_msg)
+        mock_run.return_value = expected
+        response = delete_ns(namespace="flink-operator")
+        self.assertEqual(response.returncode, 1)
 
 class TestAddRepo(TestCase):
     @mock.patch("dp.utils.subprocess_com.run_subprocess")

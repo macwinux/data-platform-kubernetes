@@ -21,7 +21,7 @@ def create_ns(namespace: str)-> CompletedProcess[bytes]:
     
     create_ns = ['kubectl', 'create', 'ns', namespace]
     result = run_subprocess(create_ns)
-    __print_output(result=result,ok_msg=[f'{namespace} namespace created'], fail_msg=[f'Failed creating the namespace: {namespace}'])
+    return __print_output(result=result,ok_msg=[f'{namespace} namespace created'], fail_msg=[f'Failed creating the namespace: {namespace}'])
 
 def delete_ns(namespace: str) -> CompletedProcess[bytes]:
     """Command that delete a namespace in kubernetes
@@ -34,14 +34,14 @@ def delete_ns(namespace: str) -> CompletedProcess[bytes]:
     """
     delete_ns = ['kubectl', 'delete', 'ns', namespace]
     result = run_subprocess(delete_ns)
-    __print_output(result=result,ok_msg=[f'{namespace} namespace deleted'], fail_msg=[f'Failed deleting the namespace: {namespace}'])
+    return __print_output(result=result,ok_msg=[f'{namespace} namespace deleted'], fail_msg=[f'Failed deleting the namespace: {namespace}'])
 
 def update_helm():
     """Command that update helm
     """
     helm_command = ['helm', 'repo', 'update']
     result = run_subprocess(helm_command)
-    __print_output(result=result,ok_msg=['helm repo updated'], fail_msg=['Failed updating helm'])
+    return __print_output(result=result,ok_msg=['helm repo updated'], fail_msg=['Failed updating helm'])
 
 def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
     """Command that add a new repository in helm
@@ -58,7 +58,7 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
     """
     helm_command = ['helm', 'repo', 'add', repo_name, repo_url]
     result = run_subprocess(helm_command)
-    __print_output(result=result,ok_msg=[f'{repo_name} added'], fail_msg=[f'Failed adding the repository {repo_name}'])
+    return __print_output(result=result,ok_msg=[f'{repo_name} added'], fail_msg=[f'Failed adding the repository {repo_name}'])
 
 def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
     """Command that remove a repository in helm
@@ -71,7 +71,7 @@ def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
     """
     helm_command = ['helm', 'repo', 'remove', repo_name]
     result = run_subprocess(helm_command)
-    __print_output(result=result,ok_msg=[f'{repo_name} removed'], fail_msg=[f'Failed removing the repository {repo_name}'])
+    return __print_output(result=result,ok_msg=[f'{repo_name} removed'], fail_msg=[f'Failed removing the repository {repo_name}'])
 
 
 def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str = None) -> CompletedProcess[bytes]:
@@ -96,7 +96,7 @@ def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml:
         install_command = ['helm', '-n', namespace, 'install', repo_name, operator_name]
 
     result = run_subprocess(install_command)
-    __print_output(result=result,ok_msg=[f'{repo_name} installed'], fail_msg=[f'Failed instaling the repository {repo_name}'])
+    return __print_output(result=result,ok_msg=[f'{repo_name} installed'], fail_msg=[f'Failed instaling the repository {repo_name}'])
 
 def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes]:
     """Command for uninstall all teh components intalled by a repo helm
@@ -111,7 +111,7 @@ def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes
     """
     uninstall_command = ['helm', 'uninstall', operator_name,'-n',namespace]
     result = run_subprocess(uninstall_command)
-    __print_output(result=result,ok_msg=[f'{operator_name} uninstalled'], fail_msg=[f'Failed uninstaling the operator {operator_name}'])
+    return __print_output(result=result,ok_msg=[f'{operator_name} uninstalled'], fail_msg=[f'Failed uninstaling the operator {operator_name}'])
 
 def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
     """Helper function to run kubectl apply commands froma  file or url
@@ -126,7 +126,7 @@ def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
     resource_path = path.join(absolute, 'resources', resource_yaml)
     command = ["kubectl", "apply", '-f', resource_path]
     result = run_subprocess(command)
-    __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
+    return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
 
 def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
@@ -141,7 +141,7 @@ def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = 
     """
     delete_command = ["kubectl", "delete", resource_type, resource_name, "--namespace", namespace]
     result = run_subprocess(delete_command)
-    __print_output(result=result,ok_msg=[f' {resource_type} {resource_name} in {namespace} deleted'], 
+    return __print_output(result=result,ok_msg=[f' {resource_type} {resource_name} in {namespace} deleted'], 
                    fail_msg=[f'Failed deleting the {resource_type} {resource_name} in namespace {namespace}',f'Error: {result.stderr}'])
     
 def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
@@ -156,7 +156,7 @@ def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
     resource_path = path.join(absolute, 'resources', resource_yaml)
     delete_command = ["kubectl", "delete", "-f", resource_path]
     result = run_subprocess(delete_command)
-    __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
+    return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
                    fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
     
 
@@ -197,12 +197,13 @@ def apply_cert_manager():
 def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg: list[str]) -> CompletedProcess[bytes]:
     
     ok_error_list = ['(AlreadyExists)', '(NotFound)', 'no repositories configured']
-    if result.returncode == 1 and [msg in str(result.stderr) for msg in ok_error_list]:
-        click.echo('-------------------------------------------')
-        click.echo(str(result.stderr).split(':', 1)[1].split('\\')[0])
-        click.echo('-------------------------------------------')
-        return result
-    elif result.returncode != 0:
+    for msg in ok_error_list:
+        if result.returncode == 1 and msg in str(result.stderr):
+            click.echo('-------------------------------------------')
+            click.echo(str(result.stderr).split(':', 1)[1].split('\\')[0])
+            click.echo('-------------------------------------------')
+            return result
+    if result.returncode != 0:
         click.echo('-------------------------------------------')
         for msg in fail_msg:
             click.echo(msg)
