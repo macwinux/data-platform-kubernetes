@@ -1,3 +1,4 @@
+import time
 import click
 import utils.subprocess_com as utils
 import flinkop.argu as argu
@@ -23,8 +24,10 @@ def install(version: str):
     utils.create_ns('flink-operator')
     utils.create_ns('flink-jobs')
     utils.add_repo('flink-operator', argu.HELM_REPO+version)
+    utils.apply_cert_manager()
     flink_op = 'flink-operator/flink-kubernetes-operator'
     utils.install_repo('flink-operator', 'flink-operator', flink_op, "flinkop-values.yaml")
+
     
 @flinkop.command(name="delete")
 def delete():
@@ -49,7 +52,7 @@ def deploy_test(app_yaml: str, namespace):
     absolute = str(Path(__file__).parent.parent)
     values_path = path.join(absolute, 'resources', app_yaml)
     command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_input"]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -63,7 +66,7 @@ def deploy_test(app_yaml: str, namespace):
         click.echo('-------------------------------------------')
     
     command = ["kubectl", "--namespace", "redpanda", "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", "flink_output"]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -77,7 +80,7 @@ def deploy_test(app_yaml: str, namespace):
         click.echo('-------------------------------------------')
     
     command = ["kubectl", "create", "-f", values_path, "--namespace", namespace]
-    result = utils.run_subprocess(command)
+    result = utils.__run_subprocess(command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')
         click.echo(f'Failed deploying the operator {app_yaml}')
@@ -88,3 +91,4 @@ def deploy_test(app_yaml: str, namespace):
         click.echo(f'{app_yaml} installed')
         click.echo('-------------------------------------------')
         return result
+    
