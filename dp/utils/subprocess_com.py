@@ -113,7 +113,7 @@ def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes
     result = __run_subprocess(uninstall_command)
     return __print_output(result=result,ok_msg=[f'{operator_name} uninstalled'], fail_msg=[f'Failed uninstaling the operator {operator_name}'])
 
-def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
+def run_kubectl_apply(resource_yaml: str, namespace: str = None) -> CompletedProcess[bytes]:
     """Helper function to run kubectl apply commands froma  file or url
 
     Args:
@@ -122,13 +122,20 @@ def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    absolute = str(Path(__file__).parent.parent)
-    resource_path = path.join(absolute, 'resources', resource_yaml)
-    command = ["kubectl", "apply", '-f', resource_path]
-    result = __run_subprocess(command)
-    return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
+    if namespace is not None:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        command = ["kubectl", "apply", '-f', resource_path, "--namespace", namespace]
+        result = __run_subprocess(command)
+        return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
+    else:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        command = ["kubectl", "apply", '-f', resource_path]
+        result = __run_subprocess(command)
+        return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
 
-def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
+def run_kubectl_delete_with_res(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
 
     Args:
@@ -143,8 +150,8 @@ def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = 
     result = __run_subprocess(delete_command)
     return __print_output(result=result,ok_msg=[f' {resource_type} {resource_name} in {namespace} deleted'], 
                    fail_msg=[f'Failed deleting the {resource_type} {resource_name} in namespace {namespace}',f'Error: {result.stderr}'])
-    
-def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
+ 
+def run_kubectl_delete(resource_yaml:str, namespace: str = None) -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
 
     Args:
@@ -152,12 +159,21 @@ def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
     Raises:
         SystemError: _description_
     """
-    absolute = str(Path(__file__).parent.parent)
-    resource_path = path.join(absolute, 'resources', resource_yaml)
-    delete_command = ["kubectl", "delete", "-f", resource_path]
-    result = __run_subprocess(delete_command)
-    return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
-                   fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
+    if namespace is not None:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        delete_command = ["kubectl", "delete", "-f", resource_path, "--namespace", namespace]
+        result = __run_subprocess(delete_command)
+        return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
+                    fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
+    else:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        delete_command = ["kubectl", "delete", "-f", resource_path]
+        result = __run_subprocess(delete_command)
+        return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
+                    fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
+
     
 
 def __run_subprocess(commands: list, input: str = None, capture: bool = True) -> CompletedProcess[bytes]:
@@ -180,7 +196,7 @@ def __run_subprocess(commands: list, input: str = None, capture: bool = True) ->
 def apply_cert_manager():
     command = ['kubectl', 'get', 'pods', '-n', 'cert-manager']
     result = __run_subprocess(commands=command)
-    if result.returncode != 0:
+    if result.returncode != 0 or b'No resources found in cert-manager namespace' in result.stderr:
         click.echo('-------------------------------------------')
         click.echo('cert-manager is not installed. Installing...')
         click.echo('-------------------------------------------')
@@ -215,4 +231,3 @@ def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg:
             click.echo(msg)
         click.echo('-------------------------------------------')
         return result
-    

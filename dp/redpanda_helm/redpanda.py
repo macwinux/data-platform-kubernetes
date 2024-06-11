@@ -57,13 +57,13 @@ def delete(namespace):
     # Al borrar el repo siguen quedando un pod de configuración y un job dentro del namespace donde se despliega Redpanda que hay que borrar manualmente. También quedan los PVC si son configurados.
     resources_to_delete = [
         ("pod", "--all"),
-        ("pod", "--all"),
+        ("pvc", "--all"),
         ("secret", "--all"),
         ("job", "redpanda-configuration")
     ]
 
     for resource_type, resource_name in resources_to_delete:
-        utils.run_kubectl_delete(resource_type, namespace, resource_name)
+        utils.run_kubectl_delete_with_res(resource_type=resource_type, namespace=namespace, resource_name=resource_name)
     
     utils.delete_repo('redpanda')
     utils.delete_ns('redpanda')

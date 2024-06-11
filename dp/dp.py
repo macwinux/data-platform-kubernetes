@@ -4,6 +4,7 @@ from redpanda_helm.redpanda import redpanda
 from scylladb.scylladb import scylladb
 from sparkop.sparkop import sparkop
 from miniop.miniop import miniop
+from strimzi_kafka.kafkaop import kafkaop
 from os import path
 
 @click.group()
@@ -16,4 +17,5 @@ if __name__ == '__main__':
     dp.add_command(scylladb)
     dp.add_command(sparkop)
     dp.add_command(miniop)
+    dp.add_command(kafkaop)
     dp()
