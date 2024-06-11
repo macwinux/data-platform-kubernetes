@@ -6,7 +6,6 @@
 
 `dp kafkaop install`
 
-
 ### Delete
 
 `dp kafkaop delete`

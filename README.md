@@ -28,4 +28,4 @@ The binary will be in dist folder.
 
 [Miniop](dp/miniop/README.md)
 
-[Kafkaop](dp/kafkaop/README.md)
+[Kafkaop](dp/strimizi_kafka/README.md)
