@@ -20,18 +20,8 @@ def create_ns(namespace: str)-> CompletedProcess[bytes]:
     """
     
     create_ns = ['kubectl', 'create', 'ns', namespace]
-    result = run_subprocess(create_ns)
-    
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed creating the namespace: {namespace}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{namespace} namespace created')
-        click.echo('-------------------------------------------')
-        return result 
+    result = __run_subprocess(create_ns)
+    return __print_output(result=result,ok_msg=[f'{namespace} namespace created'], fail_msg=[f'Failed creating the namespace: {namespace}'])
 
 def delete_ns(namespace: str) -> CompletedProcess[bytes]:
     """Command that delete a namespace in kubernetes
@@ -43,34 +33,15 @@ def delete_ns(namespace: str) -> CompletedProcess[bytes]:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     delete_ns = ['kubectl', 'delete', 'ns', namespace]
-    result = run_subprocess(delete_ns)
-    
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed deleting the namespace: {namespace}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{namespace} namespace deleted')
-        click.echo('-------------------------------------------')
-        return result 
+    result = __run_subprocess(delete_ns)
+    return __print_output(result=result,ok_msg=[f'{namespace} namespace deleted'], fail_msg=[f'Failed deleting the namespace: {namespace}'])
 
 def update_helm():
     """Command that update helm
     """
     helm_command = ['helm', 'repo', 'update']
-    result = run_subprocess(helm_command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo('Failed updating helm')
-        click.echo('-------------------------------------------')  
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo('helm repo updated')
-        click.echo('-------------------------------------------')
-        return result  
+    result = __run_subprocess(helm_command)
+    return __print_output(result=result,ok_msg=['helm repo updated'], fail_msg=['Failed updating helm'])
 
 def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
     """Command that add a new repository in helm
@@ -86,17 +57,8 @@ def add_repo(repo_name: str, repo_url: str) -> CompletedProcess[bytes]:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     helm_command = ['helm', 'repo', 'add', repo_name, repo_url]
-    result = run_subprocess(helm_command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed adding the repository {repo_name}')
-        click.echo('-------------------------------------------')  
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{repo_name} added')
-        click.echo('-------------------------------------------')
-        return result  
+    result = __run_subprocess(helm_command)
+    return __print_output(result=result,ok_msg=[f'{repo_name} added'], fail_msg=[f'Failed adding the repository {repo_name}'])
 
 def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
     """Command that remove a repository in helm
@@ -108,17 +70,8 @@ def delete_repo(repo_name: str) -> CompletedProcess[bytes]:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     helm_command = ['helm', 'repo', 'remove', repo_name]
-    result = run_subprocess(helm_command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed removing the repository {repo_name}')
-        click.echo('-------------------------------------------')  
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{repo_name} removed')
-        click.echo('-------------------------------------------')
-        return result  
+    result = __run_subprocess(helm_command)
+    return __print_output(result=result,ok_msg=[f'{repo_name} removed'], fail_msg=[f'Failed removing the repository {repo_name}'])
 
 
 def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml: str = None) -> CompletedProcess[bytes]:
@@ -142,17 +95,8 @@ def install_repo(namespace: str, repo_name:str, operator_name: str, values_yaml:
     else:
         install_command = ['helm', '-n', namespace, 'install', repo_name, operator_name]
 
-    result = run_subprocess(install_command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed instaling the repository {repo_name}')
-        click.echo('-------------------------------------------')  
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{repo_name} installed')
-        click.echo('-------------------------------------------')
-        return result  
+    result = __run_subprocess(install_command)
+    return __print_output(result=result,ok_msg=[f'{repo_name} installed'], fail_msg=[f'Failed instaling the repository {repo_name}'])
 
 def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes]:
     """Command for uninstall all teh components intalled by a repo helm
@@ -166,19 +110,10 @@ def uninstall_repo(namespace: str, operator_name: str) -> CompletedProcess[bytes
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     uninstall_command = ['helm', 'uninstall', operator_name,'-n',namespace]
-    result = run_subprocess(uninstall_command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed uninstaling the operator {operator_name}')
-        click.echo('-------------------------------------------')  
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{operator_name} uninstalled')
-        click.echo('-------------------------------------------')
-        return result  
+    result = __run_subprocess(uninstall_command)
+    return __print_output(result=result,ok_msg=[f'{operator_name} uninstalled'], fail_msg=[f'Failed uninstaling the operator {operator_name}'])
 
-def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
+def run_kubectl_apply(resource_yaml: str, namespace: str = None) -> CompletedProcess[bytes]:
     """Helper function to run kubectl apply commands froma  file or url
 
     Args:
@@ -187,109 +122,92 @@ def run_kubectl_apply(resource_yaml: str) -> CompletedProcess[bytes]:
     Returns:
         CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    absolute = str(Path(__file__).parent.parent)
-    resource_path = path.join(absolute, 'resources', resource_yaml)
-    command = ["kubectl", "apply", '-f', resource_path]
-    result = run_subprocess(command)
-    
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed applying the file {resource_yaml}')
-        click.echo(f'Error: {result.stderr}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
+    if namespace is not None:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        command = ["kubectl", "apply", '-f', resource_path, "--namespace", namespace]
+        result = __run_subprocess(command)
+        return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
     else:
-        click.echo('-------------------------------------------')
-        click.echo(f' Applying the file {resource_yaml}')
-        click.echo('-------------------------------------------')
-        return result
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        command = ["kubectl", "apply", '-f', resource_path]
+        result = __run_subprocess(command)
+        return __print_output(result=result,ok_msg=[f' Applying the file {resource_yaml}'], fail_msg=[f'Failed applying the file {resource_yaml}',f'Error: {result.stderr}'])
 
-def run_kubectl_delete(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
+def run_kubectl_delete_with_res(resource_type: str, namespace: str, resource_name: str = "--all") -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
 
     Args:
         resource_type (str): kind of resource that you want to delete
         namespace (str): namespace where is the resource
         resource_name (str, optional): name of the resource that you want to delete
-
-    Raises:
-        SystemError: _description_
+    
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     delete_command = ["kubectl", "delete", resource_type, resource_name, "--namespace", namespace]
-    result = run_subprocess(delete_command)
-    
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed deleting the {resource_type} {resource_name} in namespace {namespace}')
-        click.echo(f'Error: {result.stderr}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f' {resource_type} {resource_name} in {namespace} deleted')
-        click.echo('-------------------------------------------')
-        return result
-    
-def run_kubectl_delete(resource_yaml:str) -> CompletedProcess[bytes]:
+    result = __run_subprocess(delete_command)
+    return __print_output(result=result,ok_msg=[f' {resource_type} {resource_name} in {namespace} deleted'], 
+                   fail_msg=[f'Failed deleting the {resource_type} {resource_name} in namespace {namespace}',f'Error: {result.stderr}'])
+ 
+def run_kubectl_delete(resource_yaml:str, namespace: str = None) -> CompletedProcess[bytes]:
     """Helper function to run kubectl delete commands and handle errors.
 
     Args:
         resource_yaml (str): yaml file that contains the service that you want to delete
-    Raises:
-        SystemError: _description_
+    
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    absolute = str(Path(__file__).parent.parent)
-    resource_path = path.join(absolute, 'resources', resource_yaml)
-    delete_command = ["kubectl", "delete", "-f", resource_path]
-    result = run_subprocess(delete_command)
-    
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed deleting resource: {resource_yaml}')
-        click.echo(f'Error: {result.stderr}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
+    if namespace is not None:
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        delete_command = ["kubectl", "delete", "-f", resource_path, "--namespace", namespace]
+        result = __run_subprocess(delete_command)
+        return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
+                    fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
     else:
-        click.echo('-------------------------------------------')
-        click.echo(f'{resource_yaml} deleted')
-        click.echo('-------------------------------------------')
-        return result
-    
-def wait_deployment(namespace: str, selector: str, retries: int = 5, t: int = 5) -> bool:
-    """wait a deployment through a retry policy
+        absolute = str(Path(__file__).parent.parent)
+        resource_path = path.join(absolute, 'resources', resource_yaml)
+        delete_command = ["kubectl", "delete", "-f", resource_path]
+        result = __run_subprocess(delete_command)
+        return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
+                    fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
+
+def run_helm_revision(namespace: str) -> CompletedProcess[bytes]:
+    """Return revision name of the repo deployed
 
     Args:
-        namespace (str): namespace where the selector is deployed
-        selector (str): selector name
-        retries (int, optional):Number of retries. Defaults to 5.
-        t (int, optional): time to sleep until next retry. Defaults to 5.
+        namespace (str): repo that you want to check
 
     Returns:
-        bool: _description_
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
-    for retry in range(retries):
-        command = ["kubectl", "get", "pod", "-n", namespace, "-l", selector]
-        result = run_subprocess(command)
-        ready = (result.stdout.split(b"\n")[1]).decode()
-        if "1/1" and "Running" in ready:
-            click.echo('-------------------------------------------')
-            click.echo(f"{namespace}:{selector} is ready")
-            click.echo('-------------------------------------------')
-            return True
-        else:
-            click.echo('-------------------------------------------')
-            click.echo(f"{namespace}:{selector} is not ready after {retry} retry")
-            click.echo('-------------------------------------------')
-            time.sleep(t)
-    click.echo('-------------------------------------------')        
-    click.echo(f"{namespace}:{selector} is not deployed after {retries} retries.")
-    click.echo('-------------------------------------------')
-    SystemError(f"{namespace}:{selector} is not deployed after {retries} retries.")
-    
-    
-    
+    status_command = ['helm', 'list', '-n', namespace]
+    result = __run_subprocess(status_command)
+    return __print_output(result=result, ok_msg=[result.stdout], fail_msg=[f'Failed'])
 
-def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]:
+def apply_cert_manager():
+    """install the cert manager in case it is not installed.
+    """
+    command = ['kubectl', 'get', 'pods', '-n', 'cert-manager']
+    result = __run_subprocess(commands=command)
+    if result.returncode != 0 or b'No resources found in cert-manager namespace' in result.stderr:
+        click.echo('-------------------------------------------')
+        click.echo('cert-manager is not installed. Installing...')
+        click.echo('-------------------------------------------')
+        run_kubectl_apply('cert-manager.yaml')
+        click.echo("-------------------------------------------")
+        click.echo("Waiting for cert-manager being up and running.")
+        click.echo("-------------------------------------------")
+        time.sleep(120)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo('cert-manager already installed')
+        click.echo('-------------------------------------------')
+
+def __run_subprocess(commands: list, input: str = None, capture: bool = True) -> CompletedProcess[bytes]:
     """run a subprocess in the operating system
 
     Args:
@@ -300,8 +218,42 @@ def run_subprocess(commands: list, input: str = None) -> CompletedProcess[bytes]
     """
     #This block if else is to check if the run command exectued by the redpanda prodcuce message function. This function send a message in input parameter.
     if input == None:
-        result = run(commands, shell=True, capture_output=True)
+        result = run(commands, shell=True, capture_output=capture)
     else:
-        result = run(commands, shell=True, capture_output=True, input=bytes(input,'utf-8'))
+        result = run(commands, shell=True, capture_output=capture, input=bytes(input,'utf-8'))
 
     return result 
+
+def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg: list[str]) -> CompletedProcess[bytes]:
+    """Print the output from the result returned by subprocess
+
+    Args:
+        result (CompletedProcess[bytes]): result from subprocess
+        ok_msg (list[str]): if the result is successful, return message
+        fail_msg (list[str]): if the result fails, failed message.
+
+    Raises:
+        SystemError: When an error occurs in subprocess command, raise an error after print it.
+
+    Returns:
+        CompletedProcess[bytes]: return the result from the subprocess.
+    """
+    ok_error_list = ['(AlreadyExists)', '(NotFound)', 'no repositories configured']
+    for msg in ok_error_list:
+        if result.returncode == 1 and msg in str(result.stderr):
+            click.echo('-------------------------------------------')
+            click.echo(str(result.stderr).split(':', 1)[1].split('\\')[0])
+            click.echo('-------------------------------------------')
+            return result
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        for msg in fail_msg:
+            click.echo(msg)
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        for msg in ok_msg:
+            click.echo('-------------------------------------------')
+            click.echo(msg)
+            click.echo('-------------------------------------------')
+        return result

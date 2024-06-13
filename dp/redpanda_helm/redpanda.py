@@ -14,7 +14,7 @@ def redpanda():
 @redpanda.command()
 @click.option('--tls', '-t', default='false', help='Set TLS configuration in Redpanda')
 @click.option('--version', '-v', default='5.8.5', help='Redpanda helm chart version')
-@click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deployed')
+@click.option('--namespace', '-n', default='redpanda', help='Namespace where redpanda will be deployed')
 @click.option('--brokers', '-b', default=1, help="How many replica pods (redpanda brokers) will be deployed")
 
 def install(tls: str,  version: str, namespace: str, brokers: str):
@@ -57,13 +57,13 @@ def delete(namespace):
     # Al borrar el repo siguen quedando un pod de configuración y un job dentro del namespace donde se despliega Redpanda que hay que borrar manualmente. También quedan los PVC si son configurados.
     resources_to_delete = [
         ("pod", "--all"),
-        ("pod", "--all"),
+        ("pvc", "--all"),
         ("secret", "--all"),
         ("job", "redpanda-configuration")
     ]
 
     for resource_type, resource_name in resources_to_delete:
-        utils.run_kubectl_delete(resource_type, namespace, resource_name)
+        utils.run_kubectl_delete_with_res(resource_type=resource_type, namespace=namespace, resource_name=resource_name)
     
     utils.delete_repo('redpanda')
     utils.delete_ns('redpanda')
@@ -79,7 +79,7 @@ def create_topic(namespace: str, topic_name: str):
         topic_name (str, required): Name of the Topic
     """
     create_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "create", topic_name]
-    result = utils.run_subprocess(create_command)
+    result = utils.__run_subprocess(create_command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -103,7 +103,7 @@ def delete_topic(namespace: str, topic_name: str):
         topic_name (str, required): Name of the Topic
     """
     delete_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "delete", topic_name]
-    result = utils.run_subprocess(delete_command)
+    result = utils.__run_subprocess(delete_command)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -136,7 +136,7 @@ def produce_messages(namespace: str, topic_name: str, message: str, count: int):
     produce_command = ["kubectl", "--namespace", namespace, "exec", "-i", "-t", "redpanda-0", "-c", "redpanda", "--", "rpk", "topic", "produce", topic_name]
     input_messages = "\n".join([f"{message} {i+1}" for i in range(count)]) + "\n"
   
-    result = utils.run_subprocess(produce_command, input=input_messages)
+    result = utils.__run_subprocess(produce_command, input=input_messages)
     
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -148,6 +148,10 @@ def produce_messages(namespace: str, topic_name: str, message: str, count: int):
         click.echo('-------------------------------------------')
         click.echo(f'Messages sent to topic {topic_name}!')
         click.echo('-------------------------------------------')
-
-if __name__ == '__main__':
-    redpanda()
+        
+@redpanda.command(name="revision")
+@click.option('--namespace', '-n', default='redpanda', help='Namespace where redpanda is installed')
+def status(namespace: str):
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision(namespace)

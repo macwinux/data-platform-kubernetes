@@ -33,7 +33,7 @@ def get_jwt():
     """Get the MinIO Operator JSON Web Token (JWT) saved as a Kubernetes Secret for controlling access to the Operator Console.
     """
     command=["kubectl", "get", "secret", "console-sa-secret", "-o", "go-template='{{.data.token | base64decode}}'", "-n", "minio-operator"]
-    result=utils.run_subprocess(command)
+    result=utils.__run_subprocess(command)
     click.echo('-------------------------------------------')
     click.echo(f"JWT: {(result.stdout).decode()}")
     click.echo('-------------------------------------------')    
@@ -69,3 +69,9 @@ def delete_tenant(namespace: str):
     utils.uninstall_repo(namespace, 'tenant1')
     #utils.delete_repo('minio-operator')
     utils.delete_ns(namespace)
+    
+@miniop.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('minio-operator')

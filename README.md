@@ -25,3 +25,7 @@ The binary will be in dist folder.
 [ScyllaDB](dp/scylladb/README.md)
 
 [Sparkop](dp/sparkop/README.md)
+
+[Miniop](dp/miniop/README.md)
+
+[Kafkaop](dp/strimzi_kafka/README.md)

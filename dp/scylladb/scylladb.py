@@ -24,12 +24,7 @@ def install(nodes: int):
     utils.create_ns('scylla')
     utils.add_repo('scylla', argu.HELM_REPO)
     utils.update_helm()
-    utils.run_kubectl_apply('cert-manager.yaml')
-    utils.wait_deployment("cert-manager", "app.kubernetes.io/name=webhook")
-    click.echo("-------------------------------------------")
-    click.echo("Waiting for cert-manager being up and running.")
-    click.echo("-------------------------------------------")
-    time.sleep(120)
+    utils.apply_cert_manager()
     utils.install_repo(namespace='scylla-operator', repo_name='scylla-operator', operator_name='scylla/scylla-operator')
     time.sleep(15)
     load_yaml(nodes)
@@ -41,11 +36,17 @@ def uninstall():
     """
     utils.uninstall_repo(namespace='scylla', operator_name='scylla')
     utils.uninstall_repo(namespace='scylla-operator', operator_name='scylla-operator')
-    utils.run_kubectl_delete('cert-manager.yaml')
     utils.delete_repo(repo_name='scylla')
     utils.delete_ns('scylla')
     utils.delete_ns('scylla-operator')
-    
+
+
+@scylladb.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('scylla-operator')
+
     
 def load_yaml(nodes: int):
     absolute = str(Path(__file__).parent.parent)
@@ -73,3 +74,4 @@ def load_yaml(nodes: int):
     }]
     with open(values_path, 'w') as f:
         yaml.safe_dump(doc, f, default_flow_style=False)
+        
