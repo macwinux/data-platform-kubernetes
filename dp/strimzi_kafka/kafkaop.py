@@ -186,19 +186,7 @@ def consume_messages(topic_name: str, latest: str):
         click.echo("-------------------------------------------")
         click.echo(f"Printing messages in topic {topic_name}: (Ctrl+c to finish)")
         click.echo("-------------------------------------------")
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        # Imprimir la salida línea por línea
-        try:
-            while True:
-                output = process.stdout.readline()
-                if output == '' and process.poll() is not None:
-                    break
-                if output:
-                    print(output.strip())
-        finally:
-            process.stdout.close()
-            process.stderr.close()
+        utils.__run_Popen(command, text=True)
     else:
         command = [
         "kubectl",
@@ -217,24 +205,9 @@ def consume_messages(topic_name: str, latest: str):
         click.echo("-------------------------------------------")
         click.echo(f"Printing messages from beginning in topic {topic_name}: (Ctrl+c to finish)")
         click.echo("-------------------------------------------")       
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        utils.__run_Popen(command, text=True)
 
-        # Imprimir la salida línea por línea
-        try:
-            while True:
-                output = process.stdout.readline()
-                if output == '' and process.poll() is not None:
-                    break
-                if output:
-                    print(output.strip())
-        finally:
-            process.stdout.close()
-            process.stderr.close()
-
- 
-
-
-    
+   
 @kafkaop.command(name="revision")
 def status():
     """Check the revision for this installation
