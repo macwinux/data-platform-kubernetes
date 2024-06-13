@@ -233,3 +233,11 @@ def consume_messages(topic_name: str, latest: str):
 
  
 
+
+    
+@kafkaop.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('strimzi')
+    

@@ -14,7 +14,7 @@ def redpanda():
 @redpanda.command()
 @click.option('--tls', '-t', default='false', help='Set TLS configuration in Redpanda')
 @click.option('--version', '-v', default='5.8.5', help='Redpanda helm chart version')
-@click.option('--namespace', '-n', default='default', help='Namespace where redpanda will be deployed')
+@click.option('--namespace', '-n', default='redpanda', help='Namespace where redpanda will be deployed')
 @click.option('--brokers', '-b', default=1, help="How many replica pods (redpanda brokers) will be deployed")
 
 def install(tls: str,  version: str, namespace: str, brokers: str):
@@ -148,6 +148,10 @@ def produce_messages(namespace: str, topic_name: str, message: str, count: int):
         click.echo('-------------------------------------------')
         click.echo(f'Messages sent to topic {topic_name}!')
         click.echo('-------------------------------------------')
-
-if __name__ == '__main__':
-    redpanda()
+        
+@redpanda.command(name="revision")
+@click.option('--namespace', '-n', default='redpanda', help='Namespace where redpanda is installed')
+def status(namespace: str):
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision(namespace)
