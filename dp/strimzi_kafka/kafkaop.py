@@ -50,3 +50,10 @@ def delete_test_cluster(kafka_yaml: str):
     """
     utils.run_kubectl_delete(resource_yaml=kafka_yaml, namespace='kafka')
     utils.delete_ns('kafka')
+    
+@kafkaop.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('strimzi')
+    

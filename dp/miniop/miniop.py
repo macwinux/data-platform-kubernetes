@@ -69,3 +69,9 @@ def delete_tenant(namespace: str):
     utils.uninstall_repo(namespace, 'tenant1')
     #utils.delete_repo('minio-operator')
     utils.delete_ns(namespace)
+    
+@miniop.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('minio-operator')
