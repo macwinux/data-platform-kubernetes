@@ -39,7 +39,14 @@ def uninstall():
     utils.delete_repo(repo_name='scylla')
     utils.delete_ns('scylla')
     utils.delete_ns('scylla-operator')
-    
+
+
+@scylladb.command(name="revision")
+def status():
+    """Check the revision for this installation
+    """
+    utils.run_helm_revision('scylla-operator')
+
     
 def load_yaml(nodes: int):
     absolute = str(Path(__file__).parent.parent)
@@ -67,3 +74,4 @@ def load_yaml(nodes: int):
     }]
     with open(values_path, 'w') as f:
         yaml.safe_dump(doc, f, default_flow_style=False)
+        

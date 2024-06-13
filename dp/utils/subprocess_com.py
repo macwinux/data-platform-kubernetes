@@ -142,9 +142,9 @@ def run_kubectl_delete_with_res(resource_type: str, namespace: str, resource_nam
         resource_type (str): kind of resource that you want to delete
         namespace (str): namespace where is the resource
         resource_name (str, optional): name of the resource that you want to delete
-
-    Raises:
-        SystemError: _description_
+    
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     delete_command = ["kubectl", "delete", resource_type, resource_name, "--namespace", namespace]
     result = __run_subprocess(delete_command)
@@ -156,8 +156,9 @@ def run_kubectl_delete(resource_yaml:str, namespace: str = None) -> CompletedPro
 
     Args:
         resource_yaml (str): yaml file that contains the service that you want to delete
-    Raises:
-        SystemError: _description_
+    
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
     """
     if namespace is not None:
         absolute = str(Path(__file__).parent.parent)
@@ -174,7 +175,37 @@ def run_kubectl_delete(resource_yaml:str, namespace: str = None) -> CompletedPro
         return __print_output(result=result,ok_msg=[f'{resource_yaml} deleted'], 
                     fail_msg=[f'Failed deleting resource: {resource_yaml}',f'Error: {result.stderr}'])
 
-    
+def run_helm_revision(namespace: str) -> CompletedProcess[bytes]:
+    """Return revision name of the repo deployed
+
+    Args:
+        namespace (str): repo that you want to check
+
+    Returns:
+        CompletedProcess[bytes]: return a class that contains some fields: args, returncode, stderr, stdout
+    """
+    status_command = ['helm', 'list', '-n', namespace]
+    result = __run_subprocess(status_command)
+    return __print_output(result=result, ok_msg=[result.stdout], fail_msg=[f'Failed'])
+
+def apply_cert_manager():
+    """install the cert manager in case it is not installed.
+    """
+    command = ['kubectl', 'get', 'pods', '-n', 'cert-manager']
+    result = __run_subprocess(commands=command)
+    if result.returncode != 0 or b'No resources found in cert-manager namespace' in result.stderr:
+        click.echo('-------------------------------------------')
+        click.echo('cert-manager is not installed. Installing...')
+        click.echo('-------------------------------------------')
+        run_kubectl_apply('cert-manager.yaml')
+        click.echo("-------------------------------------------")
+        click.echo("Waiting for cert-manager being up and running.")
+        click.echo("-------------------------------------------")
+        time.sleep(120)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo('cert-manager already installed')
+        click.echo('-------------------------------------------')
 
 def __run_subprocess(commands: list, input: str = None, capture: bool = True) -> CompletedProcess[bytes]:
     """run a subprocess in the operating system
@@ -193,25 +224,20 @@ def __run_subprocess(commands: list, input: str = None, capture: bool = True) ->
 
     return result 
 
-def apply_cert_manager():
-    command = ['kubectl', 'get', 'pods', '-n', 'cert-manager']
-    result = __run_subprocess(commands=command)
-    if result.returncode != 0 or b'No resources found in cert-manager namespace' in result.stderr:
-        click.echo('-------------------------------------------')
-        click.echo('cert-manager is not installed. Installing...')
-        click.echo('-------------------------------------------')
-        run_kubectl_apply('cert-manager.yaml')
-        click.echo("-------------------------------------------")
-        click.echo("Waiting for cert-manager being up and running.")
-        click.echo("-------------------------------------------")
-        time.sleep(120)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo('cert-manager already installed')
-        click.echo('-------------------------------------------')
-
 def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg: list[str]) -> CompletedProcess[bytes]:
-    
+    """Print the output from the result returned by subprocess
+
+    Args:
+        result (CompletedProcess[bytes]): result from subprocess
+        ok_msg (list[str]): if the result is successful, return message
+        fail_msg (list[str]): if the result fails, failed message.
+
+    Raises:
+        SystemError: When an error occurs in subprocess command, raise an error after print it.
+
+    Returns:
+        CompletedProcess[bytes]: return the result from the subprocess.
+    """
     ok_error_list = ['(AlreadyExists)', '(NotFound)', 'no repositories configured']
     for msg in ok_error_list:
         if result.returncode == 1 and msg in str(result.stderr):
@@ -226,8 +252,8 @@ def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg:
         click.echo('-------------------------------------------')
         raise SystemError(result.stderr)
     else:
-        click.echo('-------------------------------------------')
         for msg in ok_msg:
+            click.echo('-------------------------------------------')
             click.echo(msg)
-        click.echo('-------------------------------------------')
+            click.echo('-------------------------------------------')
         return result
