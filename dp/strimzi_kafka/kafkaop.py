@@ -1,10 +1,10 @@
 import click
 import utils.subprocess_com as utils
-import strimzi_kafka.argu as argu
+import utils.helm_const as h
+import utils.constants as c
 from os import path
 from pathlib import Path
 import yaml
-import subprocess
 
 @click.group()
 def kafkaop():
@@ -16,20 +16,19 @@ def kafkaop():
 def install():
     """Install strimzi kafka operator in kubernetes.
     """
-    utils.create_ns('strimzi')
-    utils.create_ns('kafka')
-    utils.add_repo('strimzi', argu.HELM_REPO)
-    kafka_op = 'strimzi/strimzi-kafka-operator'
-    utils.install_repo('strimzi', 'strimzi', kafka_op, 'kafkaop-strimzi-values.yaml')
+    utils.create_ns(c.KAFKA_NS_OP)
+    utils.create_ns(c.KAFKA_NS)
+    utils.add_repo(c.KAFKA_REPO, h.HELM_KAFKA_REPO)
+    utils.install_repo(c.KAFKA_NS_OP, c.KAFKA_REPO, c.KAFKA_OP, c.KAFKA_OP_VALUES)
 
 
 @kafkaop.command(name="delete")
 def delete():
     """Uninstall strimzi kafka operator from kubernetes.
     """
-    utils.uninstall_repo('strimzi', 'strimzi')
-    utils.delete_repo('strimzi')
-    utils.delete_ns('strimzi')
+    utils.uninstall_repo(c.KAFKA_NS_OP, c.KAFKA_REPO)
+    utils.delete_repo(c.KAFKA_REPO)
+    utils.delete_ns(c.KAFKA_NS_OP)
     
 
 @kafkaop.command(name="create-test-cluster")
@@ -40,7 +39,7 @@ def create_test_cluster(kafka_yaml: str):
     Args:
         kafka_yaml (str, required): name of the yaml file where the characteristics of the test cluster are defined.
     """
-    utils.run_kubectl_apply(kafka_yaml,'kafka')
+    utils.run_kubectl_apply(kafka_yaml,c.KAFKA_NS)
 
 @kafkaop.command(name="delete-test-cluster")
 @click.argument('kafka_yaml', type=str, required=True)
@@ -50,8 +49,8 @@ def delete_test_cluster(kafka_yaml: str):
     Args:
         namespace (str, required): name of the yaml file where the characteristics of the test cluster are defined.
     """
-    utils.run_kubectl_delete(resource_yaml=kafka_yaml, namespace='kafka')
-    utils.delete_ns('kafka')
+    utils.run_kubectl_delete(resource_yaml=kafka_yaml, namespace=c.KAFKA_NS)
+    utils.delete_ns(c.KAFKA_NS)
 
 @kafkaop.command(name="create-topic")
 @click.option('--partitions', '-p', default=1 , help='Number of topic partitions')
@@ -80,11 +79,11 @@ def create_topic(topic_name: str, partitions: int, replicas: int):
         }
     }
     absolute = str(Path(__file__).parent.parent)
-    values_path = path.join(absolute, 'resources', 'kafka-topic-create.yaml')
+    values_path = path.join(absolute, 'resources', c.KAFKA_VALUES)
     with open(values_path, 'w') as file:
         yaml.dump(data, file, default_flow_style=False)
 
-    result = utils.run_kubectl_apply(resource_yaml='kafka-topic-create.yaml', namespace='kafka')
+    result = utils.run_kubectl_apply(resource_yaml=c.KAFKA_VALUES, namespace=c.KAFKA_NS)
     if result.returncode == 0:
         click.echo("-------------------------------------------")
         click.echo(f"Topic {topic_name} created!")
@@ -101,7 +100,7 @@ def delete_topic(topic_name: str):
     Raises:
         SystemError: Error with the stderr from the subprocess
     """
-    command = ["kubectl", "delete", "kafkatopic", topic_name, "--namespace", "kafka"]
+    command = ["kubectl", "delete", "kafkatopic", topic_name, "--namespace", c.KAFKA_NS]
     result = utils.__run_subprocess(command)
     if result.returncode != 0:
         click.echo('-------------------------------------------')
@@ -131,7 +130,7 @@ def produce_messages(topic_name: str, message: str, count: int):
     """
     command = [
     "kubectl", 
-    "-n", "kafka", 
+    "-n", c.KAFKA_NS, 
     "run", "kafka-producer",
     "-i",
     "--image=quay.io/strimzi/kafka:0.39.0-kafka-3.6.1", 
@@ -156,7 +155,7 @@ def produce_messages(topic_name: str, message: str, count: int):
         click.echo(f'Messages sent to topic {topic_name}!')
         click.echo('-------------------------------------------')
     
-    utils.run_kubectl_delete_with_res("pod", "kafka", "kafka-producer")
+    utils.run_kubectl_delete_with_res("pod", c.KAFKA_NS, "kafka-producer")
 
 @kafkaop.command()
 @click.argument('topic_name', type=str, required=True)
@@ -172,7 +171,7 @@ def consume_messages(topic_name: str, latest: str):
     if latest == "true":
         command = [
         "kubectl",
-        "-n", "kafka",
+        "-n", c.KAFKA_NS,
         "run", "kafka-consumer",
         "-ti",
         "--image=quay.io/strimzi/kafka:0.39.0-kafka-3.6.1",
@@ -190,7 +189,7 @@ def consume_messages(topic_name: str, latest: str):
     else:
         command = [
         "kubectl",
-        "-n", "kafka",
+        "-n", c.KAFKA_NS,
         "run", "kafka-consumer",
         "-ti",
         "--image=quay.io/strimzi/kafka:0.39.0-kafka-3.6.1",
@@ -212,5 +211,5 @@ def consume_messages(topic_name: str, latest: str):
 def status():
     """Check the revision for this installation
     """
-    utils.run_helm_revision('strimzi')
+    utils.run_helm_revision(c.KAFKA_NS_OP)
     

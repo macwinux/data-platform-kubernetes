@@ -1,1 +1,0 @@
-HELM_REPO: str = 'https://strimzi.io/charts/'

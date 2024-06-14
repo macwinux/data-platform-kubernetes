@@ -1,6 +1,7 @@
 import click
 import utils.subprocess_com as utils
-import scylladb.argu as argu
+import utils.helm_const as h
+import utils.constants as c
 import time
 from pathlib import Path
 from os import path
@@ -13,39 +14,39 @@ def scylladb():
     """
 
 @scylladb.command(name='install')
-@click.option('--nodes', '-n', default=1, help="Number of nodes for the scylladb cluster")
+@click.option('--nodes', '-n', default=1, help='Number of nodes for the scylladb cluster')
 def install(nodes: int):
     """Install scylladb cluster in kubernetes
     
     Args: 
         nodes (int, optional): How many scylladb nodes will be deployed in Kubernetes. Default to 1.
     """
-    utils.create_ns('scylla-operator')
-    utils.create_ns('scylla')
-    utils.add_repo('scylla', argu.HELM_REPO)
+    utils.create_ns(c.FLINK_OP_NS)
+    utils.create_ns(c.FLINK_NS)
+    utils.add_repo(c.FLINK_REPO, h.HELM_SCYLLA_REPO)
     utils.update_helm()
     utils.apply_cert_manager()
-    utils.install_repo(namespace='scylla-operator', repo_name='scylla-operator', operator_name='scylla/scylla-operator')
+    utils.install_repo(namespace=c.FLINK_OP_NS, repo_name=c.SCYLLA_REPO, operator_name=c.SCYLLA_OP)
     time.sleep(15)
     load_yaml(nodes)
-    utils.install_repo(namespace='scylla', repo_name='scylla', operator_name='scylla/scylla', values_yaml='scylla-values.yaml')
+    utils.install_repo(namespace=c.SCYLLA_NS, repo_name=c.SCYLLA_REPO, operator_name=c.SCYLLA_SC_OP, values_yaml=c.SCYLLA_VALUES)
 
 @scylladb.command(name="delete")
 def uninstall():
     """Uninstall scylladb cluster in kubernetes
     """
-    utils.uninstall_repo(namespace='scylla', operator_name='scylla')
-    utils.uninstall_repo(namespace='scylla-operator', operator_name='scylla-operator')
-    utils.delete_repo(repo_name='scylla')
-    utils.delete_ns('scylla')
-    utils.delete_ns('scylla-operator')
+    utils.uninstall_repo(namespace=c.FLINK_NS, operator_name=c.SCYLLA_REPO)
+    utils.uninstall_repo(namespace=c.SCYLLA_NS_OP, operator_name=c.SCYLLA_NS_OP)
+    utils.delete_repo(repo_name=c.SCYLLA_REPO)
+    utils.delete_ns(c.SCYLLA_NS)
+    utils.delete_ns(c.SCYLLA_NS_OP)
 
 
 @scylladb.command(name="revision")
 def status():
     """Check the revision for this installation
     """
-    utils.run_helm_revision('scylla-operator')
+    utils.run_helm_revision(c.SCYLLA_NS_OP)
 
     
 def load_yaml(nodes: int):

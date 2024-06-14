@@ -1,1 +1,0 @@
-HELM_REPO: str = 'https://kubeflow.github.io/spark-operator'
