@@ -1,1 +1,0 @@
-HELM_REPO: str = 'https://operator.min.io'

@@ -2,7 +2,7 @@
 #import pkg_resources
 import time
 import click
-from subprocess import CompletedProcess, run
+from subprocess import CompletedProcess, run, Popen, PIPE
 from os import path
 from pathlib import Path
 
@@ -222,7 +222,28 @@ def __run_subprocess(commands: list, input: str = None, capture: bool = True) ->
     else:
         result = run(commands, shell=True, capture_output=capture, input=bytes(input,'utf-8'))
 
-    return result 
+    return result
+
+def __run_Popen(commands: list, text=True) -> None:
+    """run a Popen subprocess in the operating system
+
+    Args:
+        commands (list): list of command to run in the operating system.
+        text (boolean): It specifies whether the input and output streams of the process should be text (True). False to handle inputs and outputs as byte sequences.
+
+    """
+    process = Popen(commands, stdout=PIPE, stderr=PIPE, text=text)
+    try:
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+    finally:
+        process.stdout.close()
+        process.stderr.close()
+ 
 
 def __print_output(result: CompletedProcess[bytes], ok_msg: list[str], fail_msg: list[str]) -> CompletedProcess[bytes]:
     """Print the output from the result returned by subprocess
