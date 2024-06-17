@@ -1,6 +1,7 @@
 import click
 import utils.subprocess_com as utils
-import miniop.argu as argu
+import utils.helm_const as h
+import utils.constants as c
 
 @click.group()
 def miniop():
@@ -12,10 +13,9 @@ def miniop():
 def install():
     """Install MinIO operator in kubernetes
     """
-    utils.create_ns('minio-operator')
-    utils.add_repo('minio-operator', argu.HELM_REPO)
-    minio_op = 'minio-operator/operator'
-    result = utils.install_repo('minio-operator', 'operator', minio_op)
+    utils.create_ns(c.MINIO_NS)
+    utils.add_repo(c.MINIO_REPO, h.HELM_MINIO_REPO)
+    result = utils.install_repo(c.MINIO_REPO, c.MINIO_REPO, c.MINIO_OP)
     click.echo('-------------------------------------------')
     click.echo(f"{(result.stdout).decode()}")
     click.echo('-------------------------------------------')   
@@ -24,9 +24,9 @@ def install():
 def delete():
     """Uninstall MinIO operator from kubernetes
     """
-    utils.uninstall_repo('minio-operator', 'operator')
-    utils.delete_repo('minio-operator')
-    utils.delete_ns('minio-operator')
+    utils.uninstall_repo(c.MINIO_REPO, c.MINIO_REPO)
+    utils.delete_repo(c.MINIO_REPO)
+    utils.delete_ns(c.MINIO_NS)
 
 @miniop.command(name="get-jwt")
 def get_jwt():
@@ -40,7 +40,7 @@ def get_jwt():
 
 
 @miniop.command(name="create-tenant")
-@click.option('--namespace', '-n', default= "minio-tenant", help='Namespace where MinIO tenant will be deployed')
+@click.option('--namespace', '-n', default= 'minio-tenant', help='Namespace where MinIO tenant will be deployed')
 def create_tenant(namespace: str):
     """Create a new tenenat using the MinIO operator
 
@@ -49,8 +49,7 @@ def create_tenant(namespace: str):
     """
 
     utils.create_ns(namespace)
-    minio_tenant = 'minio-operator/tenant'
-    result=utils.install_repo(namespace, 'tenant1', minio_tenant, "minio-tenant-values.yaml")
+    result=utils.install_repo(namespace, c.MINIO_T_REPO, c.MINIO_TENANT_OP, c.MINIO_T_REPO)
     click.echo('-------------------------------------------')
     click.echo(f"{(result.stdout).decode()}")
     click.echo('-------------------------------------------')   
@@ -66,7 +65,7 @@ def delete_tenant(namespace: str):
         namespace (str): namespace where MinIO tenant will be deployed
     """
 
-    utils.uninstall_repo(namespace, 'tenant1')
+    utils.uninstall_repo(namespace, c.MINIO_T_REPO)
     #utils.delete_repo('minio-operator')
     utils.delete_ns(namespace)
     
@@ -74,4 +73,4 @@ def delete_tenant(namespace: str):
 def status():
     """Check the revision for this installation
     """
-    utils.run_helm_revision('minio-operator')
+    utils.run_helm_revision(c.MINIO_NS)
