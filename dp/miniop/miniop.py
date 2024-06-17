@@ -49,7 +49,7 @@ def create_tenant(namespace: str):
     """
 
     utils.create_ns(namespace)
-    result=utils.install_repo(namespace, c.MINIO_T_REPO, c.MINIO_TENANT_OP, c.MINIO_T_REPO)
+    result=utils.install_repo(namespace, c.MINIO_T_REPO, c.MINIO_TENANT_OP, c.MINIO_VALUES)
     click.echo('-------------------------------------------')
     click.echo(f"{(result.stdout).decode()}")
     click.echo('-------------------------------------------')   

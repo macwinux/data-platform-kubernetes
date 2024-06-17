@@ -47,7 +47,7 @@ def delete_test_cluster(kafka_yaml: str):
     """Delete a test kafka cluster using strimzi kafka operator in kubernetes
 
     Args:
-        namespace (str, required): name of the yaml file where the characteristics of the test cluster are defined.
+        kafka_yaml (str, required): name of the yaml file where the characteristics of the test cluster are defined.
     """
     utils.run_kubectl_delete(resource_yaml=kafka_yaml, namespace=c.KAFKA_NS)
     utils.delete_ns(c.KAFKA_NS)
