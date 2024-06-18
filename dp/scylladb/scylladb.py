@@ -21,12 +21,12 @@ def install(nodes: int):
     Args: 
         nodes (int, optional): How many scylladb nodes will be deployed in Kubernetes. Default to 1.
     """
-    utils.create_ns(c.FLINK_OP_NS)
-    utils.create_ns(c.FLINK_NS)
-    utils.add_repo(c.FLINK_REPO, h.HELM_SCYLLA_REPO)
+    utils.create_ns(c.SCYLLA_NS_OP)
+    utils.create_ns(c.SCYLLA_NS)
+    utils.add_repo(c.SCYLLA_REPO, h.HELM_SCYLLA_REPO)
     utils.update_helm()
     utils.apply_cert_manager()
-    utils.install_repo(namespace=c.FLINK_OP_NS, repo_name=c.SCYLLA_REPO, operator_name=c.SCYLLA_OP)
+    utils.install_repo(namespace=c.SCYLLA_NS_OP, repo_name=c.SCYLLA_REPO, operator_name=c.SCYLLA_OP)
     time.sleep(15)
     load_yaml(nodes)
     utils.install_repo(namespace=c.SCYLLA_NS, repo_name=c.SCYLLA_REPO, operator_name=c.SCYLLA_SC_OP, values_yaml=c.SCYLLA_VALUES)
@@ -35,8 +35,8 @@ def install(nodes: int):
 def uninstall():
     """Uninstall scylladb cluster in kubernetes
     """
-    utils.uninstall_repo(namespace=c.FLINK_NS, operator_name=c.SCYLLA_REPO)
-    utils.uninstall_repo(namespace=c.SCYLLA_NS_OP, operator_name=c.SCYLLA_NS_OP)
+    utils.uninstall_repo(namespace=c.SCYLLA_NS, operator_name=c.SCYLLA_REPO)
+    utils.uninstall_repo(namespace=c.SCYLLA_NS_OP, operator_name=c.SCYLLA_REPO)
     utils.delete_repo(repo_name=c.SCYLLA_REPO)
     utils.delete_ns(c.SCYLLA_NS)
     utils.delete_ns(c.SCYLLA_NS_OP)
