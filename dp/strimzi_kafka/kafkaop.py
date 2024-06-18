@@ -49,6 +49,14 @@ def delete_test_cluster(kafka_yaml: str):
     Args:
         kafka_yaml (str, required): name of the yaml file where the characteristics of the test cluster are defined.
     """
+    #This block of code delete all the topics running in the cluster. This is nededeed to avoid having kafka namescpace "Terminating"without finishing
+    list_command_return = ["kubectl", "get", "kafkatopic", "-n", c.KAFKA_NS, "-o", "jsonpath={.items[*].metadata.name}"]
+    result_return = utils.__run_subprocess(list_command_return)
+    topics = result_return.stdout.decode('utf-8').split()
+    if topics:
+        for topic in topics:
+            delete_topic_name(topic)  
+
     utils.run_kubectl_delete(resource_yaml=kafka_yaml, namespace=c.KAFKA_NS)
     utils.delete_ns(c.KAFKA_NS)
 
@@ -100,18 +108,7 @@ def delete_topic(topic_name: str):
     Raises:
         SystemError: Error with the stderr from the subprocess
     """
-    command = ["kubectl", "delete", "kafkatopic", topic_name, "--namespace", c.KAFKA_NS]
-    result = utils.__run_subprocess(command)
-    if result.returncode != 0:
-        click.echo('-------------------------------------------')
-        click.echo(f'Failed deleting the topic {topic_name}')
-        click.echo(f'Error: {result.stderr}')
-        click.echo('-------------------------------------------')
-        raise SystemError(result.stderr)
-    else:
-        click.echo('-------------------------------------------')
-        click.echo(f'Topic {topic_name} deleted!')
-        click.echo('-------------------------------------------')
+    delete_topic_name(topic_name)
 
 @kafkaop.command()
 @click.argument('topic_name', type=str, required=True)
@@ -212,4 +209,27 @@ def status():
     """Check the revision for this installation
     """
     utils.run_helm_revision(c.KAFKA_NS_OP)
-    
+
+@kafkaop.command(name="get-topics")
+def get_topics():
+    """Get all the topics running in the cluster
+    """
+    list_command = ["kubectl", "get", "kafkatopic", "-n", c.KAFKA_NS]
+    result = utils.__run_subprocess(list_command)
+    click.echo("-------------------------------------------")
+    click.echo(f"{result.stdout.decode('utf-8')}")
+    click.echo("-------------------------------------------")
+
+def delete_topic_name(topic_name: str):
+    command = ["kubectl", "delete", "kafkatopic", topic_name, "--namespace", c.KAFKA_NS]
+    result = utils.__run_subprocess(command)
+    if result.returncode != 0:
+        click.echo('-------------------------------------------')
+        click.echo(f'Failed deleting the topic {topic_name}')
+        click.echo(f'Error: {result.stderr}')
+        click.echo('-------------------------------------------')
+        raise SystemError(result.stderr)
+    else:
+        click.echo('-------------------------------------------')
+        click.echo(f'Topic {topic_name} deleted!')
+        click.echo('-------------------------------------------')
