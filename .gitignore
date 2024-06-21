@@ -7,3 +7,4 @@ dp.spec
 build/
 dist/
 .pytest_cache/
+dp/resources/kafka-topic-create.yaml
