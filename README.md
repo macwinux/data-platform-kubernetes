@@ -14,8 +14,10 @@ or you can run redpanda heml chart with:
 `python -m unittest`
 
 #### Create the binary 
-You need to install pyinstaller in your local or in the venv with `pip install pyinstaller`
+You need to install pyinstaller in your local or in the venv with `pip install pyinstaller`:
+
 `pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py`
+
 The binary will be in dist folder.
 
 [Flink Operator](dp/flinkop/README.md)
