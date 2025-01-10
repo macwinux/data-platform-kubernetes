@@ -27,6 +27,8 @@ jobs:
           python-version-file: "pyproject.toml"
       - name: Install the project
         run: uv sync --all-extras --dev
+      - name: Install the libraries
+        run: uv pip install flake8  pytest
       - name: Run tests
         run: uv run pytest
 
