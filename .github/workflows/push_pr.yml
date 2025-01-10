@@ -30,7 +30,6 @@ jobs:
       - name: Install the libraries
         run: |
           uv tool install flake8
-          uv tool install pytest
       - name: Run tests
         run: uv run pytest
       - name: Lint with flake8
