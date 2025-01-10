@@ -77,7 +77,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
-          path: dist/dp*
+          path: dist/*
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
