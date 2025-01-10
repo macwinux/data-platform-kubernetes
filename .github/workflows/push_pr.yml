@@ -28,7 +28,9 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Install the libraries
-        run: uv tool install flake8  pytest
+        run: |
+          uv tool install flake8
+          uv tool install pytest
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
