@@ -64,33 +64,6 @@ jobs:
 #      run: |
 #        pytest
 
-  uv-pyinstaller:
-    name: pyinstaller
-    needs: uv-compile
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-      - name: "Set up Python"
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
-      - name: Install the project
-        run: uv sync --all-extras --dev
-      - name: Install the libraries
-        run: uv tool install pyinstaller
-      - name: Run pyinstaller
-        run: uv run pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.os }}
-          path: dist/dp*
-
 
 #  pyinstaller:
 #    needs: build
