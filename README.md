@@ -1,22 +1,20 @@
 ## Setup Requirements
 
-1.  If you don't have the venv environmnet created:
-`python3 -m venv .venv`
-2.  Then, activate it (if you're using Windows, you need to have administrator perms):
-`.venv\Scripts\activate`
-3.  `pip install -r requirements.txt`
-4. Now, you can run for example, flink operator with:
-`dp.py flinkop install` or `dp.py flinkop install 1.8.0`
+1.  If you don't have the uv installed, follow uv documentation:
+[uv](https://github.com/astral-sh/uv?tab=readme-ov-file#python-management)
+2. `uv sync --all-extras --dev`
+3. Now, you can run for example, flink operator with:
+`uv run dp.py flinkop install` or `uv run dp.py flinkop install 1.8.0`
 or you can run redpanda heml chart with:
-`dp.py flink install -n redpanda`
+`uv run dp.py flink install -n redpanda`
 
 #### Run test
-`python -m unittest`
+`uv run pytest`
 
 #### Create the binary 
 You need to install pyinstaller in your local or in the venv with `pip install pyinstaller`:
-
-`pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py`
+`uv tool install pyinstaller`
+`uv run pyinstaller -F --paths=dp --add-data="dp/resources:resources" .\dp\dp.py`
 
 The binary will be in dist folder.
 
