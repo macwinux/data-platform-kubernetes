@@ -85,7 +85,7 @@ jobs:
       - name: Install the libraries
         run: uv tool install pyinstaller
       - name: Run pyinstaller
-        run: uv tool install pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
+        run: uv run pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
