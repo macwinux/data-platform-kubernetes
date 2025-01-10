@@ -51,7 +51,7 @@ jobs:
       with:
         python-version: 3.11
 
-    - run: pip install -r requirements.txt pyinstaller
+    - run: pip install -r requirements_old.txt pyinstaller
     - run: pyinstaller -F -n ${{ matrix.artifact_name }} --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
