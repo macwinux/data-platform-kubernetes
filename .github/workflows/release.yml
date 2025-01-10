@@ -59,7 +59,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
+        include:
+          - os: windows-latest
+            artifact_name: dp.exe
+            asset_name: dp-windows-amd64.exe
+          - os: ubuntu-latest
+            artifact_name: dp
+            asset_name: dp-linux-amd64
+          - os: macos-latest
+            artifact_name: dp
+            asset_name: dp-macos-amd64
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -73,11 +82,11 @@ jobs:
       - name: Install the libraries
         run: uv tool install pyinstaller
       - name: Run pyinstaller
-        run: uv run pyinstaller -F --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
+        run: uv run pyinstaller -F -n ${{ matrix.artifact_name }} --paths=dp --add-data="dp/resources:resources" ./dp/dp.py
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
-          path: dist/*
+          path: dist/dp*
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
